@@ -1,2 +1,1 @@
-# hust_manager
-Project I
+# hustshop
