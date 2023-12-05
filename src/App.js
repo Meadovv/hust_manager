@@ -9,6 +9,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
 import Login from './Pages/Authentication/Login';
 import Register from './Pages/Authentication/Register';
+import About from './Pages/About/About';
 
 const App = () => {
 
@@ -30,6 +31,11 @@ const App = () => {
           <Route 
             path='/register' 
             element={<Register />}
+          />
+
+          <Route 
+            path='/about' 
+            element={<About />}
           />
 
           <Route
