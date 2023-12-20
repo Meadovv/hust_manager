@@ -1,6 +1,5 @@
 import {
     Input,
-    Divider,
     Button,
     Form,
     Row,
@@ -10,6 +9,7 @@ import {
 } from 'antd'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
+import dayjs from 'dayjs'
 
 const backgroundUrl = "/images/login-background.jpg"
 
@@ -18,13 +18,22 @@ const Register = () => {
     const navigate = useNavigate()
 
     const handleRegister = async (values) => {
-        await axios.post('http://localhost:8082/register',
+        if(values.password !== values.repassword) {
+            message.error('Password no match!')
+            return
+        }
+        await axios.post('/authentication/register',
             {
                 username: values.username,
-                password: values.password
+                password: values.password,
+                firstName: values.firstName,
+                lastName: values.lastName,
+                dob: dayjs(values.dob).valueOf(),
+                role: values.role
             }).then(res => {
                 if (res.data.success) {
                     message.success(res.data.message)
+                    navigate('/login')
                 } else {
                     message.error(res.data.message)
                 }
@@ -93,7 +102,7 @@ const Register = () => {
                     }}>Đăng ký</h2>
                     <Row>
                         <Form.Item
-                            name='first_name'
+                            name='firstName'
                             label='Họ'
                             rules={[
                                 {
@@ -111,7 +120,7 @@ const Register = () => {
                         </Form.Item>
 
                         <Form.Item
-                            name='last_name'
+                            name='lastName'
                             label='Tên'
                             rules={[
                                 {

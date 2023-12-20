@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom"
 import './Header.css'
+import { useSelector } from 'react-redux'
 
 
 const menuItems = [
@@ -24,6 +25,7 @@ const menuItems = [
 const Header = () => {
 
     const navigate = useNavigate()
+    const { user } = useSelector(state => state.user)
 
     return (
         <div style={{
@@ -66,9 +68,15 @@ const Header = () => {
                     alignItems: 'center'
                 }}>
                     <div className='myBtn' onClick={() => {
-                        navigate('/login')
+                        if(user?.userId === -1) {
+                            navigate('/login')
+                        } else {
+                            navigate(`/profile/${user?.userId}`)
+                        }
                     }}>
-                        Đăng nhập
+                        {
+                            user?.userId === -1 ? 'Đăng nhập' : user?.lastName
+                        }
                     </div>
                 </div>
             </div>

@@ -1,5 +1,6 @@
-import { Input, Divider, Form, Button } from 'antd'
+import { Input, Form, Button, message } from 'antd'
 import { useNavigate } from 'react-router-dom'
+import axios from 'axios'
 
 const backgroundUrl = "/images/login-background.jpg"
 
@@ -7,8 +8,22 @@ const Login = () => {
 
     const navigate = useNavigate()
 
-    const handleLogin = () => {
-
+    const handleLogin = async (values) => {
+        await axios.post('/authentication/login',
+        {
+            username: values.username,
+            password: values.password
+        }).then(res => {
+            if(res.data.success) {
+                localStorage.setItem('token', res.data.token)
+                message.success(res.data.message)
+                navigate('/')
+            } else {
+                message.error(res.data.message)
+            }
+        }).catch(err => {
+            console.log(err)
+        })
     }
 
     return (
@@ -70,8 +85,8 @@ const Login = () => {
                         color: '#0b6d16'
                     }}>Đăng nhập</h2>
                     <Form.Item
-                        name='email'
-                        label='Email'
+                        name='username'
+                        label='Username'
                         rules={[
                             {
                                 required: true,
