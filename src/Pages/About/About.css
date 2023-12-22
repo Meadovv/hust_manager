@@ -1,0 +1,18 @@
+.text-gradient {
+    font-weight: bold;
+    background: -webkit-linear-gradient(0deg,#e84452 0%,#6119da 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.myCard {
+    width: 45%;
+    height: 22vh;
+    border-radius: 15px;
+    border: 2px solid #3c9e47;
+    border-left-width: 8px;
+    margin: 10px 8px;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+}

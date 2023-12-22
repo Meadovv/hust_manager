@@ -16,3 +16,14 @@ a {
     text-decoration: none; /* không gạch chân link */
     display: inline-block;
 }
+
+.my-Btn {
+    background-color:#32de84;
+    border: 1px solid #006A4E;
+    color: #131921;
+}
+
+.my-Btn:hover {
+    background-color: #131921;
+    color:#32de84;
+}
