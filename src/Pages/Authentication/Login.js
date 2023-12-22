@@ -17,7 +17,7 @@ const Login = () => {
             if(res.data.success) {
                 localStorage.setItem('token', res.data.token)
                 message.success(res.data.message)
-                navigate('/')
+                window.location.reload()
             } else {
                 message.error(res.data.message)
             }

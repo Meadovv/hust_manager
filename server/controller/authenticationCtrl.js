@@ -162,13 +162,36 @@ const register = (req, res) => {
 }
 
 const verify = (req, res) => {
-    let userId = req.body.userId
-    if(userId === null || userId === undefined || userId === '') {
-        userId = req.body.authentication.userId
-    }
-
     sql = 'SELECT * FROM users WHERE userId = ?'
-    params = [Number(userId)]
+    params = [Number(req.body.authentication.userId)]
+
+    database.query(sql, params,async (err, result) => {
+        if (err) {
+            return res.status(200).send({
+                success: false,
+                message: err.message
+            })
+        }
+        if (result.length > 0) {
+            const user = result[0]
+            user.password = undefined
+            return res.status(200).send({
+                success: true,
+                message: 'Success!',
+                user: user
+            })
+        } else {
+            return res.status(200).send({
+                success: false,
+                message: 'Người dùng không tồn tại'
+            })
+        }
+    })
+}
+
+const getUser = (req, res) => {
+    sql = 'SELECT * FROM users WHERE userId = ?'
+    params = [Number(req.body.userId)]
 
     database.query(sql, params,async (err, result) => {
         if (err) {
@@ -197,5 +220,6 @@ const verify = (req, res) => {
 module.exports = {
     login,
     register,
-    verify
+    verify,
+    getUser
 }

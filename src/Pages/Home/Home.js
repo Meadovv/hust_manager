@@ -1,30 +1,85 @@
-import { useState } from 'react'
-import { Row, Col } from 'antd'
+import { useEffect, useState } from 'react'
+import { Row, Col, Card, Input } from 'antd'
 import Layout from '../../Components/Layout/Layout'
+import { useNavigate } from 'react-router-dom'
+import axios from 'axios'
 
 const Home = () => {
 
-    const [menuSpan, setMenuSpan] = useState(1)
+    const [apartmentList, setApartmentList] = useState([])
+    const [page, setPage] = useState(1)
+
+    const navigate = useNavigate()
+
+    const getApartmentList = async () => {
+        await axios.post('/apartment/get-apartment-list',
+        {
+            userId: 0,
+            page: page
+        }).then(res => {
+            if(res.data.success) {
+                setApartmentList(res.data.list)
+            } else {
+                console.log(res.data.message)
+            }
+        }).catch(err => {
+            console.log(err)
+        })
+    }
+
+    useEffect(() => {
+        getApartmentList()
+    }, [])
 
     return (
         <Layout>
             <Row style={{
-                width: '100%',
-                height: '86vh',
-                overflow: 'auto'
+                display: 'flex',
+                justifyContent: 'space-between',
+                padding: 20
             }}>
-                <Col span={menuSpan} style={{
-                    backgroundColor: 'red',
-                    height: '100%'
-                }} onMouseEnter={() => { setMenuSpan(4) }} onMouseLeave={() => { setMenuSpan(1) }}>
-                    HomePage
-                </Col>
-
-                <Col span={24 - menuSpan} style={{
-                    backgroundColor: 'blue',
-                    height: '100%'
+                <div style={{
+                    fontSize: 18,
+                    fontWeight: 'bold'
+                }}>Danh sách phòng trọ</div>
+                <div style={{
+                    width: '50%'
                 }}>
-                </Col>
+                    <Input.Search
+                        placeholder='Tìm kiếm'
+                        size='large'
+                    />
+                </div>
+            </Row>
+            <Row style={{
+                width: '100%',
+                height: '100vh',
+                overflow: 'auto',
+                padding: 10
+            }} gutter={[16, 16]}>
+                {
+                    apartmentList.map((item, index) => {
+                        return (
+                            <Col span={24 / 2} key={index}>
+                                <Card
+                                    title={item.address}
+                                    hoverable
+                                    onClick={() => {
+                                        navigate(`/apartment/${item.apartmentId}`)
+                                    }}
+                                >
+                                    <Card.Meta
+                                        style={{
+                                            fontSize: 18
+                                        }}
+                                        title={`Số phòng trống: ${item.roomNumber - item.rentedRoom}`} 
+                                        description={`Tổng số phòng: ${item.roomNumber}`} 
+                                    />
+                                </Card>
+                            </Col>
+                        )
+                    })
+                }
             </Row>
         </Layout>
     )

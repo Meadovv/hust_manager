@@ -2,8 +2,9 @@ import { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import axios from 'axios'
 import { setUser } from '../../reducer/actions/userSlice'
+import Error from '../../Pages/Error/Error'
 
-export default function PrivateRoute ({children}) {
+export default function AuthorizationRoute ({children, role}) {
     const dispatch = useDispatch()
     const { user } = useSelector(state => state.user)
 
@@ -36,5 +37,9 @@ export default function PrivateRoute ({children}) {
         }
     }, [user, getUser])
 
-    return children
+    if(user?.role === role) {
+        return children
+    } else {
+        return <Error />
+    }
 }

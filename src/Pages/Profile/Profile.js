@@ -6,72 +6,26 @@ import { message } from 'antd'
 import axios from 'axios'
 
 import { UserOutlined, CalendarFilled, CarryOutOutlined } from '@ant-design/icons';
-import { Avatar, Button, Space, Modal, Form, Input } from 'antd';
+import { Avatar, Button, Space } from 'antd';
 
 const toDate = (millis) => {
     const date = new Date(millis)
     return date.toLocaleString('en-GB')
 }
 
-function AddApartMentModal({ open, submit, onCancel }) {
-
-    const [form] = Form.useForm()
-
-    return (
-        <Modal
-            forceRender
-            title='Thêm nhà trọ'
-            okText='Thêm'
-            cancelText='Đóng'
-            open={open}
-            onCancel={onCancel}
-            onOk={() => {
-                form.validateFields()
-                    .then((values) => {
-                        form.resetFields()
-                        submit(values)
-                    })
-                    .catch((err) => {
-                        console.log(err)
-                    })
-            }}
-        >
-            <Form
-                form={form}
-                layout='vertical'
-            >
-                <Form.Item
-                    label='Địa chỉ'
-                    name='address'
-                    rules={[{ required: true, message: 'Cần có' }]}
-                >
-                    <Input />
-                </Form.Item>
-
-                <Form.Item
-                    label='Số phòng'
-                    name='roomNumber'
-                    rules={[{ required: true, message: 'Cần có' }]}
-                >
-                    <Input />
-                </Form.Item>
-            </Form>
-        </Modal>
-    )
-}
-
 export default function Profile() {
 
     const { user } = useSelector(state => state.user)
     const [currentUser, setCurrentUser] = useState()
+    const [apartmentList, setApartmentList] = useState([])
 
-    const [openModal, setOpenModal] = useState(false)
+    const [page, setPage] = useState(1)
 
     const param = useParams()
     const navigate = useNavigate()
 
     const getUser = async (userId) => {
-        await axios.post('/authentication/verify',
+        await axios.post('/authentication/getUser',
             {
                 userId: userId
             },
@@ -90,52 +44,42 @@ export default function Profile() {
             })
     }
 
-    const handleAddApartment = async (values) => {
-        await axios.post('/apartment/add',
+    const getApartmentList = async (userId, page) => {
+        await axios.post('/apartment/get-apartment-list',
         {
-            address: values.address,
-            roomNumber: values.roomNumber
-        },
-        {
-            headers: {
-                Authorization: "Bearer " + localStorage.getItem('token')
-            }
+            page: page,
+            userId: userId,
+            recordPerPage: 5
         }).then(res => {
             if(res.data.success) {
-                message.success(res.data.message)
-            } else {
-                message.error(res.data.message)
+                setApartmentList(res.data.list)
             }
         }).catch(err => {
             console.log(err)
-            message.error(err.message)
         })
-        setOpenModal(false)
     }
-
+    
     useEffect(() => {
         getUser(param.profileId)
-    }, [])
+        getApartmentList(param.profileId)
+    }, [param])
+
+    useEffect(() => {
+        getApartmentList(param.profileId, page)
+    }, [page])
 
     return (
         <Layout>
-            <AddApartMentModal
-                open={openModal}
-                onCancel={() => {
-                    setOpenModal(false)
-                }}
-                submit={handleAddApartment}
-            />
             <div style={{
                 width: '100%',
                 height: '100vh',
                 display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center'
+                alignItems: 'flex-start',
+                padding: 10
             }}>
                 <div style={{
                     padding: 20,
-                    width: '50%',
+                    width: '30%',
                     borderRadius: 10,
                     backgroundColor: '#8F9779'
                 }}>
@@ -192,15 +136,67 @@ export default function Profile() {
 
                     <div style={{
                         padding: 10,
-                        display: 'flex',
-                        justifyContent: 'space-between'
+                        display: user?.userId === currentUser?.userId ? 'flex' : 'none',
+                        justifyContent: 'space-between',
                     }}>
                         <Space>
                             <Button type='primary' size='large' >Chỉnh sửa thông tin</Button>
-                            <Button type='primary' size='large' onClick={() => { setOpenModal(true) }}>Thêm nhà trọ</Button>
+                            <Button type='primary' size='large' onClick={() => { navigate('/apartment/create') }}>Thêm nhà trọ</Button>
                         </Space>
 
                         <Button type='primary' size='large' danger onClick={() => { navigate('/logout') }}>Đăng xuất</Button>
+                    </div>
+                </div>
+
+                <div style={{
+                    padding: 20,
+                    width: '70%',
+                    borderRadius: 10,
+                    backgroundColor: '#8F9779',
+                    marginLeft: 10
+                }}>
+                    {
+                        apartmentList && apartmentList.map((item, index) => {
+                            return (
+                                <div key={index} style={{
+                                    padding: 10,
+                                    backgroundColor: '#87A96B',
+                                    borderRadius: 10,
+                                    marginTop: 10,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    cursor: 'pointer'
+                                }} onClick={() => {
+                                    navigate(`/apartment/${item.apartmentId}`)
+                                }}>
+                                    <div><strong>ID:</strong> {item.apartmentId}</div>
+                                    <div>Địa chỉ: {item.address}</div>
+                                    <div>Số phòng: {item.roomNumber}</div>
+                                    <div>Số phòng trống: {item.roomNumber - item.rentedRoom}</div>
+                                </div>
+                            )
+                        })
+                    }
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        marginTop: 10
+                    }}>
+                        <Button type='primary' size='large' onClick={() => {
+                            let previousPage = page - 1
+                            if(!(previousPage < 1)) setPage(previousPage)
+                        }}>Previous</Button>
+                        <div style={{
+                            fontSize: 18,
+                            fontWeight: 'bold',
+                            color: 'white',
+                            display: 'flex',
+                            alignItems: 'center'
+                        }}>Page: {page}</div>
+                        <Button type='primary' size='large' onClick={() => {
+                            let nextPage = page + 1
+                            setPage(nextPage)
+                        }}>Next</Button>
                     </div>
                 </div>
             </div>
