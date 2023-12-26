@@ -10,6 +10,7 @@ import {
     message
 } from 'antd'
 import { PlusOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
 const uploadButton = (
@@ -44,6 +45,8 @@ export default function Create() {
     })
 
     const [fileList, setFileList] = useState([])
+
+    const navigate = useNavigate()
 
     const handleChange = ({ fileList: newFileList }) => setFileList(newFileList);
 
@@ -228,7 +231,9 @@ export default function Create() {
                     }}>
                         <Space>
                             <Button type='primary' size='large' onClick={handleAddApartment}>Thêm</Button>
-                            <Button type='primary' size='large' danger>Thoát</Button>
+                            <Button type='primary' size='large' danger onClick={() => {
+                                navigate('/admin')
+                            }}>Thoát</Button>
                         </Space>
                     </div>
                 </div>

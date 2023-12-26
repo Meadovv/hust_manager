@@ -17,7 +17,7 @@ import AuthenticationRoute from './Components/Routes/AuthenticationRoute'
 import AuthorizationRoute from './Components/Routes/AuthorizationRoute';
 import Logout from './Pages/Authentication/Logout';
 import Create from './Pages/Create/Create';
-import ApartmentProfile from './Pages/ApartmentProfile/ApartmentProfile';
+import ApartmentView from './Pages/ApartmentProfile/ApartmentView';
 import { ApartmentEdit } from './Pages/ApartmentEdit/ApartmentEdit';
 import ApartmentRent from './Pages/ApartmentRent/ApartmentRent';
 
@@ -63,7 +63,7 @@ const App = () => {
 
 
           <Route
-            path='/profile/:profileId'
+            path='/admin'
             element={
               <PrivateRoute children={<Profile />} />
             }
@@ -72,7 +72,7 @@ const App = () => {
           <Route
             path='/apartment/:apartmentId'
             element={
-              <PrivateRoute children={<ApartmentProfile />} />
+              <PrivateRoute children={<ApartmentView />} />
             }
           />
 

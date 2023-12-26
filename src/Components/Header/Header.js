@@ -71,7 +71,7 @@ const Header = () => {
                         if(user?.userId === -1) {
                             navigate('/login')
                         } else {
-                            navigate(`/profile/${user?.userId}`)
+                            navigate(`/admin`)
                         }
                     }}>
                         {

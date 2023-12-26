@@ -1,53 +1,13 @@
-import { useEffect, useState } from "react";
 import Layout from "../../Components/Layout/Layout";
-import { useNavigate, useParams } from "react-router-dom"
-import { message, Button } from 'antd'
-import axios from 'axios'
+import { useNavigate } from "react-router-dom"
+import { Button } from 'antd'
 import { HomeOutlined, AppstoreOutlined, CheckOutlined, AppstoreAddOutlined } from '@ant-design/icons';
 import { useSelector } from 'react-redux'
 
-export default function ApartmentProfile () {
+export default function ApartmentProfile ({ apartment, apartmentImage }) {
 
     const { user } = useSelector(state => state.user)
-
-    const param = useParams()
     const navigate = useNavigate()
-
-    const [apartment, setApartment] = useState(null)
-    const [apartmentImage, setApartmentImage] = useState([])
-
-    const getApartment = async (apartmentId) => {
-        await axios.post('/apartment/get-apartment',
-        {
-            apartmentId: apartmentId
-        }).then(res => {
-            if(res.data.success) {
-                setApartment(res.data.apartment)
-            } else {
-                message.error(res.data.message)
-            }
-        }).catch(err => {
-            console.log(err)
-        })
-    }
-
-    const getApartmentImage = async (apartmentId) => {
-        await axios.post('/apartment/get-apartment-image',
-        {
-            apartmentId: apartmentId
-        }).then(res => {
-            if(res.data.success) {
-                setApartmentImage(res.data.images)
-            }
-        }).catch(err => {
-            console.log(err)
-        })
-    }
-
-    useEffect(() => {
-        getApartment(param.apartmentId)
-        getApartmentImage(param.apartmentId)
-    }, [])
 
     return (
         <Layout>
