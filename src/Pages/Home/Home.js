@@ -4,6 +4,23 @@ import Layout from '../../Components/Layout/Layout'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import MyList from '../../Components/MyList/MyList'
+import HouseList from '../../Components/MyList/HouseList';
+
+const houseList = [
+    {
+        "IDKhu" : "1",
+        "DIACHI" :"Đống Đa"
+    },
+    {
+        "IDKhu" : "2",
+        "DIACHI" :"Hai Bà Trưng"
+    },
+    {
+        "IDKhu" : "3",
+        "DIACHI" :"Long Biên"
+    }
+]
+
 
 const apartmentList = [
     {
@@ -110,7 +127,31 @@ const Home = () => {
 
     return (
         <Layout>
-            <MyList apartmentList={apartmentList}/>
+            <div class="grid" style={{
+                justifyContent: 'center'
+                
+            }}>
+                <div class="Khu_tro grid__row" style={{
+                    marginBottom: 30
+                }}>
+                        <div class="Search__lable grid__column-3">
+                            <h1 class="" style={{
+                                color: 'var(--main-color-bold)'
+                            }}>
+                                DANH SÁCH KHU TRỌ : 
+                            </h1>
+                        </div>
+
+                </div>
+
+                <div class="grid__column-8" style={{
+                    margin: 'auto'
+                }}>
+                    <HouseList houseList={houseList}/>
+                </div>
+                
+            </div>
+            
         </Layout>
     )
 }

@@ -11,6 +11,7 @@ export default function ApartmentProfile ({ apartment, apartmentImage }) {
 
     return (
         <Layout>
+            
             <div style={{
                 width: '100%',
                 height: '100vh',
@@ -125,6 +126,7 @@ export default function ApartmentProfile ({ apartment, apartmentImage }) {
                     }
                 </div>
             </div>
+            
         </Layout>
     )
 }
