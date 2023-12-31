@@ -156,7 +156,7 @@ const House__Room = () => {
 
                         <div class="grid__column-10">
                             <div id= "DivRoom" class="Homepage__background" style={{
-                                display: 'none'
+                                display: 'flex'
                             }}>
                                 <MyList apartmentList={apartmentList}/>                                
                             </div>  

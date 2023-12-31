@@ -120,7 +120,7 @@ export default function Profile() {
                             height: 600,
                             backgroundColor: '#afd4b4',
                             marginTop: 25, 
-                            borderRadius: 25
+                            borderRadius: 15
                         }}>
                             cái này profile của user
                         </div>
