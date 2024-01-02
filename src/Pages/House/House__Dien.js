@@ -24,9 +24,7 @@ const ChisoDienTheoPhong = [
         "TenPhong": "103",
         "Before": "1126.2",
         "Now": "1234.5"        
-    },
-
-    
+    }
 ]
 
 const House__Dien= () => {
