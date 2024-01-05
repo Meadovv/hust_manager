@@ -142,8 +142,8 @@ const register = (req, res) => {
         const hashedPassword = await bcrypt.hash(password, hashKey)
 
         // Insert Data
-        sql = `INSERT INTO users (username, password, firstName, lastName, dob, role, createDate) VALUES (?, ?, ?, ?, ?, ?, ?);`
-        params = [username, hashedPassword, firstName, lastName, dob, role, Date.now()]
+        sql = `INSERT INTO users (username, password, firstName, lastName, dob, role, status, createDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?);`
+        params = [username, hashedPassword, firstName, lastName, dob, role, 0, Date.now()]
 
         database.query(sql, params, (err, result) => {
             if (err) {

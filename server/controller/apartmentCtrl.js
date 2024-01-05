@@ -3,16 +3,14 @@ const database = require('../config/database')
 const addApartment = (req, res) => { // Thêm 1 căn hộ
 
     const address = req.body.apartmentInfo.address
-    const roomNumber = req.body.apartmentInfo.roomNumber
     const tienNha = req.body.apartmentInfo.tienNha
     const tienDien = req.body.apartmentInfo.tienDien
     const tienNuoc = req.body.apartmentInfo.tienNuoc
 
-    sql = `INSERT INTO apartments (userId, address, roomNumber, tienNha, tienDien, tienNuoc, createDate) VALUES (?, ?, ?, ?, ?, ?, ?);`
+    sql = `INSERT INTO apartments (userId, address, tienNha, tienDien, tienNuoc, createDate) VALUES (?, ?, ?, ?, ?, ?);`
     params = [
         req.body.authentication.userId, 
         address, 
-        roomNumber,
         tienNha,
         tienDien,
         tienNuoc,
@@ -35,13 +33,16 @@ const addApartment = (req, res) => { // Thêm 1 căn hộ
                 apartmentImage[i]
             ])
         }
-        database.query(`INSERT INTO apartmentImage (apartmentId, data) VALUES ?`, [imageParams], (err, result) => {
-            if(err) {
-                console.log(err)
-            } else {
-                console.log('Success!')
-            }
-        })
+
+        if(imageParams.length > 0) {
+            database.query(`INSERT INTO apartmentImage (apartmentId, data) VALUES ?`, [imageParams], (err, result) => {
+                if(err) {
+                    console.log(err)
+                } else {
+                    console.log('Success!')
+                }
+            })
+        }
 
         return res.status(200).send({
             success: true,
@@ -58,6 +59,9 @@ const deleteApartment = (req, res) => { // Xóa 1 căn hộ
 const getApartmentList = (req, res) => { // Lấy danh sách căn hộ
     const page = req.body.page
     const userId = req.body.userId
+    let blacklist = req.body.blacklist
+
+    if(blacklist === undefined) blacklist = 0
 
     let recordPerPage = req.body.recordPerPage
     if(recordPerPage === '' || recordPerPage === null || recordPerPage === undefined || Number(recordPerPage) === NaN) {
@@ -86,36 +90,36 @@ const getApartmentList = (req, res) => { // Lấy danh sách căn hộ
             apartments.apartmentId AS apartmentId,
             apartments.userId AS userId,
             apartments.address AS address,
-            apartments.roomNumber AS roomNumber,
-            COALESCE(COUNT(rooms.roomId), 0) AS rentedRoom
+            COALESCE(COUNT(CASE WHEN rooms.rented <> 0 THEN rooms.roomId END), 0) AS rentedRoom,
+            COALESCE(COUNT(rooms.roomId), 0) AS roomNumber
         FROM
             apartments
         LEFT JOIN
             rooms ON apartments.apartmentId = rooms.apartmentId
         WHERE
-            1
+            1 AND apartments.userId <> ?
         GROUP BY
-            apartments.apartmentId, apartments.userId, apartments.address, apartments.roomNumber
+            apartments.apartmentId, apartments.userId, apartments.address
         LIMIT ? OFFSET ?;`
-        params = [recordPerPage, recordPerPage * Number(page - 1)]
+        params = [blacklist, recordPerPage, recordPerPage * Number(page - 1)]
     } else {
         sql = `
         SELECT
             apartments.apartmentId AS apartmentId,
             apartments.userId AS userId,
             apartments.address AS address,
-            apartments.roomNumber AS roomNumber,
-            COALESCE(COUNT(rooms.roomId), 0) AS rentedRoom
+            COALESCE(COUNT(CASE WHEN rooms.rented <> 0 THEN rooms.roomId END), 0) AS rentedRoom,
+            COALESCE(COUNT(rooms.roomId), 0) AS roomNumber
         FROM
             apartments
         LEFT JOIN
             rooms ON apartments.apartmentId = rooms.apartmentId
         WHERE
-            userId = ?
+            userId = ? AND apartments.userId <> ?
         GROUP BY
-            apartments.apartmentId, apartments.userId, apartments.address, apartments.roomNumber
+            apartments.apartmentId, apartments.userId, apartments.address
         LIMIT ? OFFSET ?;`
-        params = [userId, recordPerPage, recordPerPage * Number(page - 1)]
+        params = [userId, blacklist, recordPerPage, recordPerPage * Number(page - 1)]
     }
 
     database.query(sql, params, (err, result) => {
@@ -141,11 +145,11 @@ const getApartment = (req, res) => {
         apartments.apartmentId AS apartmentId,
         apartments.userId AS userId,
         apartments.address AS address,
-        apartments.roomNumber AS roomNumber,
         apartments.tienNha AS tienNha,
         apartments.tienDien AS tienDien,
         apartments.tienNuoc AS tienNuoc,
-        COALESCE(COUNT(rooms.roomId), 0) AS rentedRoom
+        COALESCE(COUNT(CASE WHEN rooms.rented <> 0 THEN rooms.roomId END), 0) AS rentedRoom,
+        COALESCE(COUNT(rooms.roomId), 0) AS roomNumber
     FROM
         apartments
     LEFT JOIN
@@ -153,7 +157,7 @@ const getApartment = (req, res) => {
     WHERE
         apartments.apartmentId=?
     GROUP BY
-        apartments.apartmentId, apartments.userId, apartments.address, apartments.roomNumber;`
+        apartments.apartmentId, apartments.userId, apartments.address;`
     params = [apartmentId]
 
     database.query(sql, params, (err, result) => {
@@ -209,15 +213,13 @@ const editApartment = (req, res) => {
 
     const apartmentId = req.body.apartmentId
     const address = req.body.apartmentInfo.address
-    const roomNumber = req.body.apartmentInfo.roomNumber
     const tienNha = req.body.apartmentInfo.tienNha
     const tienDien = req.body.apartmentInfo.tienDien
     const tienNuoc = req.body.apartmentInfo.tienNuoc
 
-    sql = `UPDATE apartments SET address=?, roomNumber=?, tienNha=?, tienDien=?, tienNuoc=? WHERE apartmentId=?;`
+    sql = `UPDATE apartments SET address=?, tienNha=?, tienDien=?, tienNuoc=? WHERE apartmentId=?;`
     params = [
         address, 
-        roomNumber,
         tienNha,
         tienDien,
         tienNuoc,

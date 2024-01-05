@@ -23,6 +23,8 @@ app.use('/authentication', require('./routers/authenticationRoute'))
 
 app.use('/apartment', require('./routers/apartmentRoute'))
 
+app.use('/room', require('./routers/roomRoute'))
+
 app.listen(process.env.SERVER_POST, () => {
     console.log(`Server is running on POST ${process.env.SERVER_POST}`)
 })
