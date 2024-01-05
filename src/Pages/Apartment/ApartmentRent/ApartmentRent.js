@@ -39,7 +39,6 @@ export default function ApartmentRent() {
     const getRoomList = async (apartmentId) => {
         await axios.post('/room/get-room-list', {
             apartmentId: apartmentId,
-            filter: roomFilter
         }, {
             headers: {
                 Authorization: "Bearer " + localStorage.getItem('token')
