@@ -2,9 +2,12 @@ import { useEffect, useState } from 'react'
 import { Row, Col, Card, Input } from 'antd'
 import Layout from '../../Components/Layout/Layout'
 import { useNavigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 import axios from 'axios'
 
 const Home = () => {
+
+    const { user } = useSelector(state => state.user)
 
     const [apartmentList, setApartmentList] = useState([])
     const [page, setPage] = useState(1)
@@ -14,6 +17,7 @@ const Home = () => {
     const getApartmentList = async () => {
         await axios.post('/apartment/get-apartment-list',
         {
+            blacklist: user?.userId,
             userId: 0,
             page: page
         }).then(res => {
@@ -29,7 +33,7 @@ const Home = () => {
 
     useEffect(() => {
         getApartmentList()
-    }, [])
+    }, [user])
 
     return (
         <Layout>
@@ -65,7 +69,7 @@ const Home = () => {
                                     title={item.address}
                                     hoverable
                                     onClick={() => {
-                                        navigate(`/apartment/${item.apartmentId}`)
+                                        navigate(`/apartment/${item.apartmentId}/view`)
                                     }}
                                 >
                                     <Card.Meta

@@ -16,10 +16,13 @@ import PrivateRoute from './Components/Routes/PrivateRoute';
 import AuthenticationRoute from './Components/Routes/AuthenticationRoute'
 import AuthorizationRoute from './Components/Routes/AuthorizationRoute';
 import Logout from './Pages/Authentication/Logout';
-import Create from './Pages/Create/Create';
-import ApartmentProfile from './Pages/ApartmentProfile/ApartmentProfile';
-import { ApartmentEdit } from './Pages/ApartmentEdit/ApartmentEdit';
-import ApartmentRent from './Pages/ApartmentRent/ApartmentRent';
+import ApartmentCreate from './Pages/Apartment/ApartmentCreate/ApartmentCreate';
+import ApartmentProfile from './Pages/Apartment/ApartmentProfile/ApartmentProfile';
+import ApartmentEdit from './Pages/Apartment/ApartmentEdit/ApartmentEdit';
+import ApartmentRent from './Pages/Apartment/ApartmentRent/ApartmentRent';
+import RoomEdit from './Pages/Apartment/RoomEdit/RoomEdit';
+import RoomView from './Pages/Apartment/RoomView/RoomView';
+import ApartmentManage from './Pages/Apartment/ApartmentManage/ApartmentManage';
 
 const App = () => {
 
@@ -70,9 +73,16 @@ const App = () => {
           />
 
           <Route
-            path='/apartment/:apartmentId'
+            path='/apartment/:apartmentId/view'
             element={
               <PrivateRoute children={<ApartmentProfile />} />
+            }
+          />
+
+          <Route
+            path='/apartment/:apartmentId/manage'
+            element={
+              <PrivateRoute children={<ApartmentManage />} />
             }
           />
 
@@ -80,6 +90,20 @@ const App = () => {
             path='/apartment/:apartmentId/edit'
             element={
               <PrivateRoute children={<ApartmentEdit />} />
+            }
+          />
+
+          <Route
+            path='/room/:roomId/view'
+            element={
+              <PrivateRoute children={<RoomView />} />
+            }
+          />
+
+          <Route
+            path='/room/:roomId/edit'
+            element={
+              <PrivateRoute children={<RoomEdit />} />
             }
           />
 
@@ -93,7 +117,7 @@ const App = () => {
           <Route
             path='/apartment/create'
             element={
-              <AuthorizationRoute children={<Create />} role='owner'/>
+              <AuthorizationRoute children={<ApartmentCreate />} role='owner'/>
             }
           />
 

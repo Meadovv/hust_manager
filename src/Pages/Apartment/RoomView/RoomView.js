@@ -1,28 +1,28 @@
 import { useEffect, useState } from "react";
-import Layout from "../../Components/Layout/Layout";
-import { useNavigate, useParams } from "react-router-dom"
-import { message, Button } from 'antd'
+import Layout from "../../../Components/Layout/Layout";
+import { useParams } from "react-router-dom";
 import axios from 'axios'
-import { HomeOutlined, AppstoreOutlined, CheckOutlined, AppstoreAddOutlined } from '@ant-design/icons';
-import { useSelector } from 'react-redux'
+import { message, Button } from 'antd'
+import { HomeOutlined, CheckOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import { useSelector } from "react-redux";
 
-export default function ApartmentProfile () {
+export default function RoomView() {
 
     const { user } = useSelector(state => state.user)
-
+    const [room, setRoom] = useState()
+    const [roomImages, setRoomImages] = useState([])
     const param = useParams()
-    const navigate = useNavigate()
 
-    const [apartment, setApartment] = useState(null)
-    const [apartmentImage, setApartmentImage] = useState([])
-
-    const getApartment = async (apartmentId) => {
-        await axios.post('/apartment/get-apartment',
-        {
-            apartmentId: apartmentId
+    const getRoom = async (roomId) => {
+        await axios.post('/room/get-room', {
+            roomId: roomId
+        }, {
+            headers: {
+                Authorization: "Bearer " + localStorage.getItem('token')
+            }
         }).then(res => {
             if(res.data.success) {
-                setApartment(res.data.apartment)
+                setRoom(res.data.room)
             } else {
                 message.error(res.data.message)
             }
@@ -31,13 +31,34 @@ export default function ApartmentProfile () {
         })
     }
 
-    const getApartmentImage = async (apartmentId) => {
-        await axios.post('/apartment/get-apartment-image',
-        {
-            apartmentId: apartmentId
+    const getRoomImage = async (roomId) => {
+        await axios.post('/room/get-room-image', {
+            roomId: roomId
+        }, {
+            headers: {
+                Authorization: "Bearer " + localStorage.getItem('token')
+            }
         }).then(res => {
             if(res.data.success) {
-                setApartmentImage(res.data.images)
+                setRoomImages(res.data.images)
+            }
+        }).catch(err => {
+            console.log(err)
+        })
+    }
+
+    const rentRoom = async (roomId) => {
+        await axios.post('/room/rent-room', {
+            roomId: roomId
+        }, {
+            headers: {
+                Authorization: "Bearer " + localStorage.getItem('token')
+            }
+        }).then(res => {
+            if(res.data.success) {
+                message.success(res.data.message)
+            } else {
+                message.error(res.data.message)
             }
         }).catch(err => {
             console.log(err)
@@ -45,15 +66,15 @@ export default function ApartmentProfile () {
     }
 
     useEffect(() => {
-        getApartment(param.apartmentId)
-        getApartmentImage(param.apartmentId)
-    }, [])
+        getRoom(param.roomId)
+        getRoomImage(param.roomId)
+    }, [param])
 
     return (
         <Layout>
             <div style={{
                 width: '100%',
-                height: '100vh',
+                minHeight: '100vh',
                 display: 'flex',
                 alignItems: 'flex-start',
                 padding: 5,
@@ -68,37 +89,37 @@ export default function ApartmentProfile () {
                     <div style={{
                         fontSize: 20
                     }}>
+                        <ExclamationCircleOutlined style={{
+                            marginRight: 10
+                        }}/>
+                        Chủ nhà: {room?.firstName + ' ' + room?.lastName}
+                    </div>
+
+                    <div style={{
+                        fontSize: 20
+                    }}>
                         <HomeOutlined style={{
                             marginRight: 10
                         }}/>
-                        Địa chỉ: {apartment?.address}
+                        Địa chỉ: {room?.address}
                     </div>
 
                     <div style={{
                         fontSize: 20
                     }}>
-                        <AppstoreOutlined style={{
+                        <ExclamationCircleOutlined style={{
                             marginRight: 10
                         }}/>
-                        Số phòng: {apartment?.roomNumber}
+                        Tầng: {room?.floor}
                     </div>
 
                     <div style={{
                         fontSize: 20
                     }}>
-                        <AppstoreAddOutlined style={{
+                        <ExclamationCircleOutlined style={{
                             marginRight: 10
                         }}/>
-                        Số phòng trống: {apartment?.roomNumber - apartment?.rentedRoom}
-                    </div>
-
-                    <div style={{
-                        fontSize: 20
-                    }}>
-                        <CheckOutlined style={{
-                            marginRight: 10
-                        }}/>
-                        Tiền nhà: {apartment?.tienNha} VND/ 1 Tháng
+                        Phòng: {room?.number}
                     </div>
 
                     <div style={{
@@ -107,7 +128,7 @@ export default function ApartmentProfile () {
                         <CheckOutlined style={{
                             marginRight: 10
                         }}/>
-                        Tiền điện: {apartment?.tienDien} VND/ 1 Số
+                        Tiền nhà: {room?.tienNha} VND/ 1 Tháng
                     </div>
 
                     <div style={{
@@ -116,27 +137,30 @@ export default function ApartmentProfile () {
                         <CheckOutlined style={{
                             marginRight: 10
                         }}/>
-                        Tiền nước: {apartment?.tienNuoc} VND/ 1 Khối
+                        Tiền điện: {room?.tienDien} VND/ 1 Số
                     </div>
 
                     <div style={{
-                        display: 'flex',
+                        fontSize: 20
+                    }}>
+                        <CheckOutlined style={{
+                            marginRight: 10
+                        }}/>
+                        Tiền nước: {room?.tienNuoc} VND/ 1 Khối
+                    </div>
+
+                    <div style={{
+                        display: (user?.role !== 'owner' && user?.userId !== room?.ownerId && user?.userId !== -1) ? 'flex' : 'none',
                         justifyContent: 'flex-end'
                     }}>
-                        <Button type='primary' size='large' style={{
-                            marginTop: 10,
-                            display: user?.userId !== -1 ? '' : 'none'
-                        }} onClick={() => {
-                            {
-                                user?.userId === apartment?.userId ? 
-                                    navigate(`/apartment/${apartment.apartmentId}/edit`) :
-                                    navigate(`/apartment/${apartment.apartmentId}/rent`)
-                            }
-                        }}>
-                            {
-                                user?.userId === apartment?.userId ? 'Chỉnh sửa' : 'Thuê'
-                            }
-                        </Button>
+                        <Button type='primary' size='large' onClick={() => rentRoom(room?.roomId)}>Thuê</Button>
+                    </div>
+                    <div style={{
+                        display: (user?.role !== 'owner' && user?.userId !== room?.ownerId && user?.userId !== -1) ? 'none' : 'flex',
+                        marginTop: 10,
+                        color: '#AA0000'
+                    }}>
+                        *Tài khoản của bạn không đủ điều kiện để thuê phòng trọ này
                     </div>
                 </div>
 
@@ -150,7 +174,7 @@ export default function ApartmentProfile () {
                     flexWrap: 'wrap',
                 }}>
                     {
-                        apartmentImage && apartmentImage.map((item, index) => {
+                        roomImages && roomImages.map((item, index) => {
                             return (
                                 <img key={index} src={item.data} alt='image' style={{
                                     objectFit: 'cover',

@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 import Layout from '../../Components/Layout/Layout'
 import { useSelector } from 'react-redux'
 import { useNavigate, useParams } from "react-router-dom"
-import { message } from 'antd'
+import { message, Menu } from 'antd'
 import axios from 'axios'
 
-import { UserOutlined, CalendarFilled, CarryOutOutlined } from '@ant-design/icons';
+import { UserOutlined, CalendarFilled, CarryOutOutlined, BookOutlined, AppstoreOutlined } from '@ant-design/icons';
 import { Avatar, Button, Space } from 'antd';
 
 const toDate = (millis) => {
@@ -13,11 +13,25 @@ const toDate = (millis) => {
     return date.toLocaleString('en-GB')
 }
 
+const menuItems = [
+    {
+        label: 'Phòng trọ',
+        key: 'room',
+        icon: <AppstoreOutlined />
+    },
+    {
+        label: 'Đánh dấu',
+        key: 'bookmark',
+        icon: <BookOutlined />
+    }
+]
+
 export default function Profile() {
 
     const { user } = useSelector(state => state.user)
     const [currentUser, setCurrentUser] = useState()
     const [apartmentList, setApartmentList] = useState([])
+    const [currentMenu, setCurrentMenu] = useState(menuItems[0].key)
 
     const [page, setPage] = useState(1)
 
@@ -58,6 +72,10 @@ export default function Profile() {
             console.log(err)
         })
     }
+
+    const getRoom = (roomId) => {
+
+    }
     
     useEffect(() => {
         getUser(param.profileId)
@@ -67,6 +85,12 @@ export default function Profile() {
     useEffect(() => {
         getApartmentList(param.profileId, page)
     }, [page])
+
+    useEffect(() => {
+        if(user?.roomId) {
+            getRoom(user?.roomId)
+        }
+    }, [user])
 
     return (
         <Layout>
@@ -141,7 +165,9 @@ export default function Profile() {
                     }}>
                         <Space>
                             <Button type='primary' size='large' >Chỉnh sửa thông tin</Button>
-                            <Button type='primary' size='large' onClick={() => { navigate('/apartment/create') }}>Thêm nhà trọ</Button>
+                            <Button type='primary' size='large' onClick={() => { navigate('/apartment/create')}} style={{
+                                display: currentUser?.role === 'user' ? 'none' : 'block'
+                            }}>Thêm nhà trọ</Button>
                         </Space>
 
                         <Button type='primary' size='large' danger onClick={() => { navigate('/logout') }}>Đăng xuất</Button>
@@ -153,7 +179,8 @@ export default function Profile() {
                     width: '70%',
                     borderRadius: 10,
                     backgroundColor: '#8F9779',
-                    marginLeft: 10
+                    marginLeft: 10,
+                    display: currentUser?.role === 'user' ? 'none' : ''
                 }}>
                     {
                         apartmentList && apartmentList.map((item, index) => {
@@ -167,7 +194,7 @@ export default function Profile() {
                                     flexDirection: 'column',
                                     cursor: 'pointer'
                                 }} onClick={() => {
-                                    navigate(`/apartment/${item.apartmentId}`)
+                                    navigate(`/apartment/${item.apartmentId}/view`)
                                 }}>
                                     <div><strong>ID:</strong> {item.apartmentId}</div>
                                     <div>Địa chỉ: {item.address}</div>
@@ -198,6 +225,34 @@ export default function Profile() {
                             setPage(nextPage)
                         }}>Next</Button>
                     </div>
+                </div>
+
+                <div style={{
+                    padding: 20,
+                    width: '70%',
+                    borderRadius: 10,
+                    marginLeft: 10,
+                    display: currentUser?.role === 'owner' ? 'none' : ''
+                }}>
+                    <Menu
+                        onClick={(value) => {
+                            setCurrentMenu(value.key)
+                        }}
+                        selectedKeys={[currentMenu]}
+                        mode="horizontal"
+                        items={menuItems}
+                    />
+                    {
+                        currentMenu === menuItems[0].key ? 
+                        <div style={{
+                            padding: 10,
+                        }}>
+                            AAAA
+                        </div> : 
+                        <div>
+                            BBBB
+                        </div>
+                    }
                 </div>
             </div>
         </Layout>

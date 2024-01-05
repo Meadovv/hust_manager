@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Layout from "../../Components/Layout/Layout";
+import Layout from "../../../Components/Layout/Layout";
 import {
     Button,
     Space,
@@ -14,31 +14,30 @@ import axios from 'axios'
 
 const uploadButton = (
     <div>
-      <PlusOutlined />
-      <div
-        style={{
-          marginTop: 8,
-        }}
-      >
-        Upload
-      </div>
+        <PlusOutlined />
+        <div
+            style={{
+                marginTop: 8,
+            }}
+        >
+            Upload
+        </div>
     </div>
-  );
+);
 
 const getBase64 = (file) =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = (error) => reject(error);
-  });
+    new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = (error) => reject(error);
+    });
 
-export default function Create() {
+export default function ApartmentCreate() {
 
     const [apartmentInfo, setApartmentInfo] = useState({
         address: null,
-        roomNumber: null,
-        tienNha:null,
+        tienNha: null,
         tienDien: null,
         tienNuoc: null
     })
@@ -48,31 +47,30 @@ export default function Create() {
     const handleChange = ({ fileList: newFileList }) => setFileList(newFileList);
 
     const handleAddApartment = async () => {
-        let images = []
-        for(let i = 0; i < fileList.length; ++i) {
-            console.log(await getBase64(fileList[i].originFileObj))
+        const images = []
+        for (let i = 0; i < fileList.length; ++i) {
             images.push(await getBase64(fileList[i].originFileObj))
         }
 
         await axios.post('/apartment/add',
-        {
-            apartmentInfo: apartmentInfo,
-            apartmentImage: images
-        },
-        {
-            headers: {
-                Authorization: "Bearer " + localStorage.getItem('token')
-            }
-        }).then(res => {
-            if(res.data.success) {
-                message.success(res.data.message)
-            } else {
-                message.error(res.data.message)
-            }
-        }).catch(err => {
-            console.log(err)
-            message.error(err.message)
-        })
+            {
+                apartmentInfo: apartmentInfo,
+                apartmentImage: images
+            },
+            {
+                headers: {
+                    Authorization: "Bearer " + localStorage.getItem('token')
+                }
+            }).then(res => {
+                if (res.data.success) {
+                    message.success(res.data.message)
+                } else {
+                    message.error(res.data.message)
+                }
+            }).catch(err => {
+                console.log(err)
+                message.error(err.message)
+            })
     }
 
     return (
@@ -104,32 +102,21 @@ export default function Create() {
                         justifyContent: 'space-between'
                     }}>
                         <div style={{
-                            width: '50%',
+                            width: '100%',
                             display: 'flex',
                             alignItems: 'center'
                         }}>
-                            <strong>Địa chỉ:</strong>
-                            <Input style={{ width: '80%', marginLeft: 10 }} onChange={(event) => {
-                            setApartmentInfo({
-                                ...apartmentInfo,
-                                address: event.target.value
-                            })
-                        }}/>
-                        </div>
-
-                        <div style={{
-                            width: '50%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'flex-end'
-                        }}>
-                            <strong>Số phòng:</strong>
-                            <InputNumber style={{ width: '30%', marginLeft: 10 }} onChange={(value) => {
-                            setApartmentInfo({
-                                ...apartmentInfo,
-                                roomNumber: value
-                            })
-                        }}/>
+                            <div style={{
+                                width: '10%'
+                            }}>
+                                <strong>Địa chỉ: </strong>
+                            </div>
+                            <Input style={{ width: '90%', marginLeft: 10 }} onChange={(event) => {
+                                setApartmentInfo({
+                                    ...apartmentInfo,
+                                    address: event.target.value
+                                })
+                            }} />
                         </div>
                     </div>
 
@@ -158,7 +145,7 @@ export default function Create() {
                                 ...apartmentInfo,
                                 tienNha: value
                             })
-                        }}/>
+                        }} />
                     </div>
 
                     <div style={{
@@ -177,7 +164,7 @@ export default function Create() {
                                 ...apartmentInfo,
                                 tienDien: value
                             })
-                        }}/>
+                        }} />
                     </div>
 
                     <div style={{
@@ -196,7 +183,7 @@ export default function Create() {
                                 ...apartmentInfo,
                                 tienNuoc: value
                             })
-                        }}/>
+                        }} />
                     </div>
 
                     <Divider orientation="center" style={{

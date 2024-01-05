@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import Layout from "../../Components/Layout/Layout";
+import Layout from "../../../Components/Layout/Layout";
 import { useNavigate, useParams } from "react-router-dom"
-import { message, Button, Menu, Divider, Input, InputNumber, Space } from 'antd'
+import { message, Button, Menu, Divider, Input, InputNumber, Space, Select } from 'antd'
 import axios from 'axios'
 import { HomeOutlined, AppstoreOutlined, CheckOutlined, AppstoreAddOutlined, FileImageOutlined } from '@ant-design/icons';
 import { useSelector } from 'react-redux'
+import RoomAddModal from "../../../Components/Modal/RoomAddModal";
 
 const menuItems = [
     {
@@ -26,13 +27,12 @@ const menuItems = [
 
 const defaultInfo = {
     address: null,
-    roomNumber: null,
     tienNha: null,
     tienDien: null,
     tienNuoc: null
 }
 
-export function ApartmentEdit() {
+export default function ApartmentEdit() {
 
     const { user } = useSelector(state => state.user)
 
@@ -45,6 +45,35 @@ export function ApartmentEdit() {
     const [currentMenu, setCurrentMenu] = useState(menuItems[0].key)
 
     const [apartmentInfo, setApartmentInfo] = useState(defaultInfo)
+
+    const [addModalVisible, setAddModalVisible] = useState(false)
+
+    const [roomList, setRoomList] = useState([])
+    const [rootListFilter, setRoomListFilter] = useState([])
+
+    const [roomFilter, setRoomFilter] = useState({
+        floor: -1,
+        rented: -1
+    })
+
+    const getRoomList = async (apartmentId) => {
+        await axios.post('/room/get-room-list', {
+            apartmentId: apartmentId,
+            filter: roomFilter
+        }, {
+            headers: {
+                Authorization: "Bearer " + localStorage.getItem('token')
+            }
+        }).then(res => {
+            if (res.data.success) {
+                setRoomList(res.data.roomList)
+            } else {
+                setRoomList([])
+            }
+        }).catch(err => {
+            console.log(err)
+        })
+    }
 
     const getApartment = async (apartmentId) => {
         await axios.post('/apartment/get-apartment',
@@ -107,6 +136,7 @@ export function ApartmentEdit() {
 
     const refreshInformation = () => {
         getApartment(param.apartmentId)
+        getRoomList(param.apartmentId)
         getApartmentImage(param.apartmentId)
     }
 
@@ -114,8 +144,47 @@ export function ApartmentEdit() {
         refreshInformation()
     }, [])
 
+    useEffect(() => {
+        let rooms = []
+        roomList?.forEach(room => {
+            if (roomFilter.floor !== -1 && room.floor !== roomFilter.floor) return
+            if (roomFilter.rented !== -1 && room.rented !== roomFilter.rented) return
+
+            rooms.push(room)
+        })
+        setRoomListFilter(rooms)
+    }, [roomFilter, roomList])
+
+    const handleAddRoom = async (roomInfo, imageList) => {
+        await axios.post('/room/add', {
+            apartmentId: apartment?.apartmentId,
+            roomInfo: roomInfo,
+            roomImage: imageList
+        },
+            {
+                headers: {
+                    Authorization: "Bearer " + localStorage.getItem('token')
+                }
+            }).then(res => {
+                if (res.data.success) {
+                    message.success(res.data.message)
+                    setAddModalVisible(false)
+                    refreshInformation()
+                } else {
+                    message.error(res.data.message)
+                }
+            }).catch(err => {
+                console.log(err)
+            })
+    }
+
     return (
         <Layout>
+            <RoomAddModal
+                visible={addModalVisible}
+                onCancel={() => setAddModalVisible(false)}
+                onOk={handleAddRoom}
+            />
             <div style={{
                 width: '100%',
                 height: '100vh',
@@ -219,7 +288,7 @@ export function ApartmentEdit() {
                         <Space direction='vertical' style={{
                             marginTop: 10
                         }}>
-                            <Button type='primary' size='large'>Thêm Phòng</Button>
+                            <Button type='primary' size='large' onClick={() => setAddModalVisible(true)}>Thêm Phòng</Button>
                             <Button type='primary' size='large' danger>Xóa Nhà trọ</Button>
                         </Space>
                     </div>
@@ -300,30 +369,19 @@ export function ApartmentEdit() {
                                             justifyContent: 'space-between'
                                         }}>
                                             <div style={{
-                                                width: '50%',
+                                                width: '100%',
                                                 display: 'flex',
                                                 alignItems: 'center'
                                             }}>
-                                                <strong>Địa chỉ:</strong>
-                                                <Input style={{ width: '80%', marginLeft: 10 }} onChange={(event) => {
+                                                <div style={{
+                                                    width: '10%'
+                                                }}>
+                                                    <strong>Địa chỉ: </strong>
+                                                </div>
+                                                <Input style={{ width: '90%', marginLeft: 10 }} onChange={(event) => {
                                                     setApartmentInfo({
                                                         ...apartmentInfo,
                                                         address: event.target.value
-                                                    })
-                                                }} />
-                                            </div>
-
-                                            <div style={{
-                                                width: '50%',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'flex-end'
-                                            }}>
-                                                <strong>Số phòng:</strong>
-                                                <InputNumber style={{ width: '30%', marginLeft: 10 }} onChange={(value) => {
-                                                    setApartmentInfo({
-                                                        ...apartmentInfo,
-                                                        roomNumber: value
                                                     })
                                                 }} />
                                             </div>
@@ -407,12 +465,106 @@ export function ApartmentEdit() {
                                         </div>
                                     </div>
                                 </div> :
-                                <div style={{
-                                    padding: 10,
-                                    fontSize: 18
-                                }}>
-                                    AAA
-                                </div>
+                                <>
+                                    <div style={{
+                                        padding: 10,
+                                        fontSize: 18,
+                                        width: '100%',
+                                        marginTop: 10,
+                                        display: 'flex',
+                                        justifyContent: 'space-between'
+                                    }}>
+                                        <div style={{
+                                            width: '50%'
+                                        }}>
+                                            <strong style={{
+                                                width: '10%',
+                                                marginRight: 10
+                                            }}>Tầng</strong>
+                                            <Select
+                                                style={{
+                                                    width: '90%'
+                                                }}
+                                                options={[
+                                                    ...Array.from(new Set(roomList.map(room => room.floor)))
+                                                        .map(room => ({ value: room, label: `Tầng ${room}` })),
+                                                    {
+                                                        label: 'Tất cả',
+                                                        value: -1
+                                                    }
+                                                ]}
+                                                value={roomFilter.floor}
+                                                onChange={(value) => setRoomFilter({ ...roomFilter, floor: value })}
+                                            />
+                                        </div>
+
+                                        <div style={{
+                                            width: '40%'
+                                        }}>
+                                            <strong style={{
+                                                width: '20%',
+                                                marginRight: 10
+                                            }}>Trạng thái</strong>
+                                            <Select
+                                                style={{
+                                                    width: '80%'
+                                                }}
+                                                options={[
+                                                    {
+                                                        label: 'Đã thuê',
+                                                        value: 1
+                                                    },
+                                                    {
+                                                        label: 'Chưa thuê',
+                                                        value: 0
+                                                    },
+                                                    {
+                                                        label: 'Tất cả',
+                                                        value: -1
+                                                    }
+                                                ]}
+                                                value={roomFilter.rented}
+                                                onChange={(value) => setRoomFilter({ ...roomFilter, rented: value })}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div style={{
+                                        display: 'flex',
+                                        flexDirection: 'column'
+                                    }}>
+                                        {
+                                            rootListFilter.map((room, index) => {
+
+                                                return (
+                                                    <div key={index} style={{
+                                                        width: '100%',
+                                                        padding: '2rem',
+                                                        border: '1px solid black',
+                                                        borderRadius: '1rem',
+                                                        margin: '1rem',
+                                                        display: 'flex',
+                                                        justifyContent: 'space-between'
+                                                    }}>
+                                                        <div>
+                                                            <strong>Phòng: {room.number}</strong>
+                                                            <div>Tầng: {room.floor}</div>
+                                                            <div>Trạng thái: {room.rented ? 'Đã có người thuê' : 'Chưa có người thuê'}</div>
+                                                        </div>
+
+                                                        <div>
+                                                            <Button type='primary' size='large' onClick={() => {
+                                                                navigate(`/room/${room.roomId}/edit`)
+                                                            }}>Sửa</Button>
+                                                            <Button type='primary' size='large' danger style={{
+                                                                marginLeft: 10
+                                                            }} disabled={room.rented}>Xóa</Button>
+                                                        </div>
+                                                    </div>
+                                                )
+                                            })
+                                        }
+                                    </div>
+                                </>
                     }
                 </div>
             </div>
