@@ -125,7 +125,7 @@ html {
     font-weight: bold;
     background-color: var(--main-color);
     color: white;
-    background-image: linear-gradient(to right, #7dc242, #3b9d46);
+    background-image: linear-gradient(to right, #addf81, #3b9d46);
     position: inherit;
 }
 

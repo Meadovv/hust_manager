@@ -158,6 +158,15 @@ const House__Room = () => {
                             <div id= "DivRoom" class="Homepage__background" style={{
                                 display: 'flex'
                             }}>
+                                <div class="form__controls" style={{
+                                    width: '90%'
+                                }}>
+                                    <button class="form__controls-btn btn btn-primary header__navbar-item--strong" style={{
+                                        height: '4rem',
+                                        borderRadius: 15,
+                                        padding: '2px 16px'
+                                    }}>TẠO PHÒNG</button>
+                                </div>
                                 <MyList apartmentList={apartmentList}/>                                
                             </div>  
                               

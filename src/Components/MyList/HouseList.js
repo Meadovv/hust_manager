@@ -8,26 +8,60 @@ export default function HouseList({ houseList }) {
         houseList && houseList.map((item, index) => {
 
         return (
-            <div class="Search__list-item  grid__row"> 
+            <div class="Search__list-item  header__navbar"> 
                 <div class="Hidden-div">{item.IDKhu }</div>
-                <div  class="grid__column-2" style={{
-                    color: 'var(--main-color-bold)',
-                    paddingTop: 5 
+                <ul class="header__navbar-list">
+                    <li class="header__navbar-item ">
+                        <div  class="" style={{
+                            color: 'var(--main-color-bold)',
+                            paddingTop: 5 
+                        }}>
+                            <h2 style={{
+                                fontSize: '2.2rem'
+                            }}>CƠ SỞ {index+1} : </h2>
+                        </div>
+                    </li>
+                    <li class="header__navbar-item ">
+                        <div class="" >
+                            <p class="text__size" style={{
+                                fontSize: '2rem'
+                            }}>{item.DIACHI }</p>  
+                        </div>
+                    </li>
+                </ul>
+
+                <ul class="header__navbar-list" style={{
+                    marginTop: 20
                 }}>
-                    <h2>CƠ SỞ {index+1} : </h2>
-                </div>
-                <div class="grid__column-6" >
-                    <p class="text__size">{item.DIACHI }</p>  
-                </div>
-                <a href="" class="grid__column-4" style={{
-                    paddingTop: 10
-                }}>
-                    <button class=" form__controls-btn btn btn-primary header__navbar-item--strong" style={{
-                        height: '4rem',
-                        borderRadius: 15
-                    }}>
-                    CHI TIẾT</button>
-                </a>
+                    <li class="header__navbar-item ">
+                        <a href="" class="header__navbar-item header__navbar-item--strong btn btn-primary " style={{
+                            padding: 10
+                        }}> 
+                            CHI TIẾT
+                        </a>
+                    </li>
+                    <li class="header__navbar-item ">
+                        <a href="" class="header__navbar-item header__navbar-item--strong btn btn-primary " style={{
+                            padding: 10
+                        }}>
+                            <i class="fa-solid fa-pen-to-square" style={{
+                                color: 'var(--white-color)',
+                                marginRight: 12
+                            }}></i>
+                            SỬA 
+                        </a>
+                    </li>
+                    <li class="header__navbar-item ">
+                        <a href="" class="header__navbar-item header__navbar-item--strong btn btn-primary " style={{
+                            padding: 10
+                        }}>
+                            <i class="fa-regular fa-trash-can" style={{
+                                color: 'var(--white-color)'
+                            }}></i>
+                        </a>
+                    </li>
+                </ul>
+
                     
             </div>
             )

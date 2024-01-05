@@ -134,6 +134,7 @@ const Home = () => {
                 <div class="Khu_tro grid__row" style={{
                     marginBottom: 30
                 }}>
+                    
                         <div class="Search__lable grid__column-3">
                             <h1 class="" style={{
                                 color: 'var(--main-color-bold)'

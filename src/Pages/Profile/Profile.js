@@ -114,31 +114,107 @@ export default function Profile() {
                     marginLeft: -12,
                     marginRight: -12
                 }}>
-                    <div class="grid__column-3">
+                    <div style={{
+                        width: 333
+                    }}>
                         <div class="UserProfile" style={{
                             width: '100%',
-                            height: 600,
+                            height: 610,
                             backgroundColor: '#afd4b4',
-                            marginTop: 25, 
-                            borderRadius: 15
+                            marginTop: 15, 
+                            borderRadius: 5, 
+                            paddingTop: 50
                         }}>
-                            cái này profile của user
+                            <div style={{
+                                backgroundColor: 'var(--white-color)',
+                                width: '70%',
+                                height: '230px',
+                                margin: 'auto',
+                                display: 'flex',
+                                justifyContent: 'center',
+                                paddingTop: 30,
+                                borderRadius: '50%'
+                            }}>
+                                <i class="fa-solid fa-user-tie " style={{
+                                    color: 'var(--main-color-bold)',
+                                    fontSize: '15rem'
+                                }}></i>
+                                
+                            </div>
+
+                            <div class="text-gradient" style={{
+                                width: '100%',
+                                fontSize: '3rem',
+                                fontWeight: '600',
+                                marginTop: 50,
+                                display: 'flex',
+                                justifyContent: 'center'
+                                
+                            }}>
+                                tên user
+                            </div>
+
+                            <div class="grid__row text__size text-gradient" style={{
+                                padding: '30px 18px',
+                                lineHeight: '3rem'
+                            }}>
+                                <div class="grid__column-6">
+                                    Ngày tham gia: 
+                                </div>
+                                <div class="grid__column-6">
+                                    22/6/2019
+                                </div>
+                                <div class="grid__column-6">
+                                    Vai trò:  
+                                </div>
+                                <div class="grid__column-6">
+                                    Khách thuê
+                                </div>
+                                <div class="grid__column-6">
+                                    Số điện thoại: 
+                                </div>
+                                <div class="grid__column-6">
+                                    0123456789
+                                </div>
+
+                            </div>
                         </div>
                     </div>
 
                     <div class="grid__column-9">
                         <div class="listKhuTro grid__row">
                             <div class="listKHUTRO">
-                                <div class="Search__lable grid__column-2">
+                                <div class="Search__lable grid__row " style={{
+                                    width: '85%',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    margin: 'auto'
+                                }}>
                                     <h1 class="" style={{
-                                        color: '#1c6a1e'
+                                        color: '#1c6a1e',
+                                        fontSize: '2.3rem'
                                         }}>
                                         KHU TRỌ
                                     </h1>
+
+                                    <button class="form__controls-btn btn header__navbar-item--strong" style={{
+                                        height: '4rem',
+                                        borderRadius: 15,
+                                        padding: '2px 16px',
+                                        border: '2px solid var(--main-color-bold)',
+                                        fontWeight: 'bold',
+                                        backgroundColor: '#dfdfdf',
+                                        color: 'var(--main-color-bold)'
+                                    }}>
+                                        <i class="fa-solid fa-plus" style={{
+                                            color: 'var(--main-color-bold)',
+                                            marginRight: 12
+                                        }}></i>
+                                        TẠO MỚI</button>
                                 </div>
                         
                                 <div class="Search__list grid__row" style={{
-                                    width: '60%',
+                                    width: '85%',
                                     margin: '20px auto'
                                     }}>
                                     <HouseList houseList={houseList}/>
