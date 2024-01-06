@@ -6,12 +6,13 @@ const addRoom = (req, res) => {
     const name = req.body.roomInfo.name
     const apartmentId = req.body.apartmentId
 
-    sql = `INSERT INTO rooms (apartmentId, floor, number, rented, createDate) VALUES (?, ?, ?, ?, ?);`
+    sql = `INSERT INTO rooms (apartmentId, floor, number, status, lastBill, createDate) VALUES (?, ?, ?, ?, ?, ?);`
     params = [
         apartmentId,
         floor,
         name,
-        0,
+        'available',
+        Date.now(),
         Date.now()
     ]
 
@@ -85,13 +86,13 @@ const getRoom = (req, res) => {
     sql = `
 SELECT
 	apartments.userId AS ownerId,
-    users.firstName AS firstName,
-    users.lastName AS lastName,
+    CONCAT(users.firstName, ' ', users.lastName) AS username,
 	rooms.roomId AS roomId,
     rooms.apartmentId AS apartmentId,
     rooms.floor AS floor,
     rooms.number AS number,
     rooms.rented AS rented,
+    rooms.lastRent AS lastRent,
     apartments.address AS address,
     apartments.tienNha AS tienNha,
     apartments.tienDien AS tienDien,
@@ -127,7 +128,7 @@ WHERE
     })
 }
 
-const updateRoom = () => {
+const updateRoom = (req, res) => {
 
 }
 
@@ -144,7 +145,7 @@ const getRoomImage = (req, res) => {
                 message: err.message
             })
         }
-        if(result.length < 1) {
+        if (result.length < 1) {
             return res.status(200).send({
                 success: false,
                 message: 'Không tồn tại',
@@ -163,37 +164,45 @@ const rentRoom = async (req, res) => {
     try {
         const userId = req.body.authentication.userId
         const roomId = req.body.roomId
-        const user = await new Promise((resolve, reject) => {
-            database.query('SELECT * FROM users WHERE userId=?', [userId], (err, result) => {
-                if(err) reject(err)
+
+        const rented = await new Promise((resolve, reject) => {
+            database.query('SELECT * FROM rooms WHERE rented=?', [userId], (err, result) => {
+                if (err) reject(err)
                 else resolve(result)
             })
         })
 
-        if(user.length < 0) {
+        if (rented.length > 0) {
             return res.status(200).send({
                 success: false,
-                message: 'Không tìm thấy người dùng'
+                message: 'Bạn đã thuê phòng khác'
             })
         }
 
-        if(user[0].status === 2) {
+        const room = await new Promise((resolve, reject) => {
+            database.query('SELECT * FROM rooms WHERE roomId=?', [roomId], (err, result) => {
+                if (err) reject(err)
+                else resolve(result)
+            })
+        })
+
+        if (room.length < 0) {
             return res.status(200).send({
                 success: false,
-                message: 'Bạn đã thuê phòng rồi'
+                message: 'Không tìm thấy phòng'
             })
         }
 
-        if(user[0].status === 1) {
+        if (room[0].status !== 'available') {
             return res.status(200).send({
                 success: false,
-                message: 'Bạn đang trong quá trình khác'
+                message: 'Phòng đã được thuê'
             })
         }
 
         await new Promise((resolve, reject) => {
-            database.query('UPDATE users SET roomId=?, status=? WHERE userId=?', [roomId, 1, userId], (err, result) => {
-                if(err) reject(err)
+            database.query('UPDATE rooms SET rented=?, status=? WHERE roomId=?', [userId, 'pending', roomId], (err, result) => {
+                if (err) reject(err)
                 else resolve(result)
             })
         })
@@ -205,7 +214,73 @@ const rentRoom = async (req, res) => {
 
     } catch (err) {
         res.status(200).send({
-            success: false, 
+            success: false,
+            message: err.message
+        })
+    }
+}
+
+const approveRentRequest = async (req, res) => {
+    try {
+        const roomId = req.body.roomId
+        await new Promise((resolve, reject) => {
+            database.query('UPDATE rooms SET status=?, lastRent=? WHERE roomId=?', ['approved', Date.now(), roomId], (err, result) => {
+                if (err) reject(err)
+                else resolve(result)
+            })
+        })
+
+        res.status(200).send({
+            success: true,
+            message: 'Phê duyệt thành công'
+        })
+    } catch (err) {
+        res.status(500).send({
+            success: false,
+            message: err.message
+        })
+    }
+}
+
+const rejectRentRequest = async (req, res) => {
+    try {
+        const roomId = req.body.roomId
+        await new Promise((resolve, reject) => {
+            database.query('UPDATE rooms SET rented=?, status=? WHERE roomId=?', [null, 'available', roomId], (err, result) => {
+                if (err) reject(err)
+                else resolve(result)
+            })
+        })
+
+        res.status(200).send({
+            success: true,
+            message: 'Đã từ chối yêu cầu'
+        })
+    } catch (err) {
+        res.status(500).send({
+            success: false,
+            message: err.message
+        })
+    }
+}
+
+const freeRoom = async (req, res) => {
+    try {
+        const roomId = req.body.roomId
+        await new Promise((resolve, reject) => {
+            database.query('UPDATE rooms SET rented=?, status=? WHERE roomId=?', [null, 'available', roomId], (err, result) => {
+                if (err) reject(err)
+                else resolve(result)
+            })
+        })
+
+        res.status(200).send({
+            success: true,
+            message: 'Xóa người dùng thành công'
+        })
+    } catch (err) {
+        res.status(500).send({
+            success: false,
             message: err.message
         })
     }
@@ -213,29 +288,28 @@ const rentRoom = async (req, res) => {
 
 const getAllRentRequest = async (req, res) => {
     try {
-        const userId = req.body.authentication.userId
+        const apartmentId = req.body.apartmentId
         const rentRequests = await new Promise((resolve, reject) => {
             database.query(`
-            SELECT * FROM (
-                SELECT
-                    apartments.userId AS ownerId,
-                    users.roomId AS roomId,
-                    users.userId AS userId,
-                    rooms.floor AS roomFloor,
-                    rooms.number AS roomNumber,
-                    CONCAT(users.firstName, ' ', users.lastName) AS username,
-                    users.status AS status
-                FROM users
-                LEFT JOIN rooms ON users.roomId = rooms.roomId
-                LEFT JOIN apartments ON apartments.apartmentId = rooms.apartmentId
-                WHERE users.roomId IS NOT NULL AND users.status = 1
-            ) AS newTable WHERE newTable.ownerId=?`, [userId], (err, result) => {
-                if(err) reject(err)
+            SELECT
+            apartments.userId AS ownerId,
+            apartments.apartmentId AS apartmentId,
+            rooms.roomId AS roomId,
+            rooms.rented AS rented,
+            rooms.status AS status,
+            rooms.floor AS roomFloor,
+            rooms.number AS roomNumber,
+            CONCAT(users.firstName, ' ', users.lastName) AS username
+            FROM rooms
+            LEFT JOIN users ON rooms.rented = users.userId
+            LEFT JOIN apartments ON apartments.apartmentId = rooms.apartmentId
+            WHERE apartments.apartmentId = ? AND rooms.status = 'pending'`, [apartmentId], (err, result) => {
+                if (err) reject(err)
                 else resolve(result)
             })
         })
 
-        if(rentRequests.length < 1) {
+        if (rentRequests.length < 1) {
             return res.status(200).send({
                 success: false,
                 message: 'Không có yêu cầu nào'
@@ -245,10 +319,96 @@ const getAllRentRequest = async (req, res) => {
         res.status(200).send({
             success: true,
             message: 'Lấy thành công',
-            requestList: rentRequests
+            rentList: rentRequests
         })
-    } catch(err) {
+    } catch (err) {
         res.status(200).send({
+            success: false,
+            message: err.message
+        })
+    }
+}
+
+const createBill = async (req, res) => {
+    try {
+        const billData = req.body.bill
+        if(billData.note === '') billData.note = `Hóa đơn tháng ${new Date().getMonth() + 1} năm ${new Date().getFullYear()}`
+        await new Promise((resolve, reject) => {
+            database.query(
+                `INSERT INTO bills (soDienTruoc, soDienSau, soNuocTruoc, soNuocSau, tienNha, heSoTienDien, heSoTienNuoc, heSoTienNha, roomId, payerId, note, createDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
+            [billData.soDien.truoc, billData.soDien.nay, billData.soNuoc.truoc, billData.soNuoc.nay, billData.heSoTienNha, billData.tienDien, billData.tienNuoc, billData.tienNha, billData.roomId, billData.payerId, billData.note, Date.now()], 
+            (err, result) => {
+                if(err) reject(err)
+                else resolve(result)
+            })
+        })
+
+        await new Promise((resolve, reject) => {
+            database.query(`UPDATE rooms SET lastBill=?, soDien=?, soNuoc=? WHERE roomId=?`,
+            [Date.now(), billData.soDien.nay, billData.soNuoc.nay, billData.roomId],
+            (err, result) => {
+                if(err) reject(err)
+                else resolve(result)
+            })
+        })
+
+        res.status(200).send({
+            success: true,
+            message: 'Tạo hóa đơn thành công'
+        })
+    } catch (err) {
+        res.status(500).send({
+            success: false,
+            message: err.message
+        })
+    }
+}
+
+const getPaymentList = async (req, res) => {
+    try {
+        const paymentList = await new Promise((resolve, reject) => {
+            database.query(
+                `SELECT 
+                bills.billId,
+                bills.soDienTruoc,
+                bills.soDienSau,
+                bills.soNuocTruoc,
+                bills.soNuocSau,
+                bills.tienNha,
+                bills.heSoTienDien,
+                bills.heSoTienNuoc,
+                bills.heSoTienNha,
+                bills.roomId,
+                bills.payerId,
+                bills.note,
+                bills.createDate,
+                bills.paymentDate,
+                apartments.apartmentId AS apartmentId,
+                apartments.address AS roomAddress,
+                rooms.floor AS roomFloor,
+                rooms.number AS roomNumber,
+                apartments.userId AS ownerId,
+                CONCAT(ownerTable.firstName, ' ', ownerTable.lastName) AS ownerName,
+                CONCAT(payerTable.firstName, ' ', payerTable.lastName) AS payerName
+            FROM bills
+            LEFT JOIN rooms ON bills.roomId = rooms.roomId
+            LEFT JOIN apartments ON rooms.apartmentId = apartments.apartmentId
+            LEFT JOIN users AS ownerTable ON apartments.userId = ownerTable.userId
+            LEFT JOIN users AS payerTable ON bills.payerId = payerTable.userId
+            WHERE rooms.roomId = ?
+            `, 
+                [req.body.roomId], (err, result) => {
+                if(err) reject(err)
+                else resolve(result)
+            })
+        })
+        res.status(200).send({
+            success: true,
+            message: 'Lấy danh sách thành công',
+            paymentList: paymentList
+        })
+    } catch (err) {
+        res.status(500).send({
             success: false,
             message: err.message
         })
@@ -262,5 +422,10 @@ module.exports = {
     updateRoom,
     getRoomImage,
     rentRoom,
-    getAllRentRequest
+    getAllRentRequest,
+    approveRentRequest,
+    rejectRentRequest,
+    freeRoom,
+    createBill,
+    getPaymentList
 }

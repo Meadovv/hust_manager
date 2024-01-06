@@ -1,8 +1,14 @@
 import Layout from "../../../Components/Layout/Layout";
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 import axios from "axios";
-import { IssuesCloseOutlined, DollarOutlined, FileSearchOutlined, BarsOutlined } from '@ant-design/icons'
+import { IssuesCloseOutlined, DollarOutlined, FileSearchOutlined, BarsOutlined, TeamOutlined } from '@ant-design/icons'
+import RentRequest from "./Manager/RentRequest";
+import FeeConfirm from "./Manager/FeeConfirm";
+import Bill from "./Manager/Bill";
+import PaymentList from "./Manager/PaymentList";
+import MemberList from "./Manager/MemberList";
 
 const menuItems = [
     {
@@ -16,19 +22,19 @@ const menuItems = [
         icon: <DollarOutlined />
     },
     {
-        label: 'Tiền điện',
-        value: 'tien-dien',
+        label: 'Hóa đơn',
+        value: 'bill',
         icon: <FileSearchOutlined />
     },
     {
-        label: 'Tiền nước',
-        value: 'tien-nuoc',
-        icon: <FileSearchOutlined />
-    },
-    {
-        label: 'Danh sách nộp tiền',
-        value: 'fee-list',
+        label: 'Danh sách hóa đơn',
+        value: 'bill-list',
         icon: <BarsOutlined />
+    },
+    {
+        label: 'Danh sách thành viên',
+        value: 'member-list',
+        icon: <TeamOutlined />
     }
 ]
 
@@ -36,7 +42,9 @@ export default function ApartmentManage() {
 
     const navigate = useNavigate()
     const param = useParams()
+    const [searchParams, setSearchParams] = useSearchParams()
 
+    const { user } = useSelector(state => state.user)
     const [apartment, setApartment] = useState(null)
     const [currentMenu, setCurrentMenu] = useState(menuItems[0].value)
 
@@ -61,6 +69,20 @@ export default function ApartmentManage() {
     useEffect(() => {
         getApartment(param.apartmentId)
     }, [param])
+
+    useEffect(() => {
+        if(user && apartment && user?.userId !== apartment?.userId) {
+            navigate('/')
+        }
+    }, [user, apartment])
+
+    useEffect(() => {
+        if (searchParams.get('path') && menuItems.find(item => item.value === searchParams.get('path'))) {
+            setCurrentMenu(searchParams.get('path'))
+        } else {
+            navigate(`/apartment/${param.apartmentId}/manage?path=${menuItems[0].value}`)
+        }
+    }, [searchParams])
 
 
     return (
@@ -111,7 +133,9 @@ export default function ApartmentManage() {
                                         padding: 20,
                                         cursor: 'pointer',
                                         backgroundColor: item.value === currentMenu ? 'white' : 'transparent'
-                                    }} onClick={() => setCurrentMenu(item.value)}>
+                                    }} onClick={() => {
+                                        navigate(`/apartment/${param.apartmentId}/manage?path=${item.value}`)
+                                    }}>
                                         {item.icon}
                                         <div style={{
                                             marginLeft: 10
@@ -130,7 +154,10 @@ export default function ApartmentManage() {
                     minHeight: '100vh'
                 }}>
                     {
-
+                        currentMenu === menuItems[0].value ? <RentRequest /> :
+                            currentMenu === menuItems[1].value ? <FeeConfirm /> :
+                                currentMenu === menuItems[2].value ? <Bill /> :
+                                    currentMenu === menuItems[3].value ? <PaymentList /> : <MemberList />
                     }
                 </div>
             </div>

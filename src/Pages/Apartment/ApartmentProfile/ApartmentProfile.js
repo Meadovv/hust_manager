@@ -3,7 +3,7 @@ import Layout from "../../../Components/Layout/Layout";
 import { useNavigate, useParams } from "react-router-dom"
 import { message, Button } from 'antd'
 import axios from 'axios'
-import { HomeOutlined, AppstoreOutlined, CheckOutlined, AppstoreAddOutlined } from '@ant-design/icons';
+import { HomeOutlined, AppstoreOutlined, CheckOutlined, AppstoreAddOutlined, UserOutlined } from '@ant-design/icons';
 import { useSelector } from 'react-redux'
 
 export default function ApartmentProfile () {
@@ -117,6 +117,16 @@ export default function ApartmentProfile () {
                             marginRight: 10
                         }}/>
                         Tiền nước: {apartment?.tienNuoc} VND/ 1 Khối
+                    </div>
+
+                    <div style={{
+                        fontSize: 20,
+                        cursor: 'pointer'
+                    }} onClick={() => navigate(`/profile/${apartment.userId}`)}>
+                        <UserOutlined style={{
+                            marginRight: 10
+                        }}/>
+                        Thông tin liên lạc: {apartment?.username}
                     </div>
 
                     <div style={{

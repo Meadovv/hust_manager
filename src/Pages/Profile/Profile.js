@@ -32,14 +32,14 @@ export default function Profile() {
     const [currentUser, setCurrentUser] = useState()
     const [apartmentList, setApartmentList] = useState([])
     const [currentMenu, setCurrentMenu] = useState(menuItems[0].key)
-
+    const [room, setRoom] = useState(null)
     const [page, setPage] = useState(1)
 
     const param = useParams()
     const navigate = useNavigate()
 
     const getUser = async (userId) => {
-        await axios.post('/authentication/getUser',
+        await axios.post('/authentication/get-user',
             {
                 userId: userId
             },
@@ -73,8 +73,18 @@ export default function Profile() {
         })
     }
 
-    const getRoom = (roomId) => {
-
+    const getRoom = async (roomId) => {
+        await axios.post('/room/get-room', {
+            roomId: roomId
+        }).then(res => {
+            if(res.data.success) {
+                setRoom(res.data.room)
+            } else {
+                message.error(res.data.message)
+            }
+        }).catch(err => {
+            console.log(err)
+        })
     }
     
     useEffect(() => {
@@ -232,7 +242,7 @@ export default function Profile() {
                     width: '70%',
                     borderRadius: 10,
                     marginLeft: 10,
-                    display: currentUser?.role === 'owner' ? 'none' : ''
+                    display: currentUser?.role === 'user' && user?.userId === currentUser?.userId ? '' : 'none'
                 }}>
                     <Menu
                         onClick={(value) => {
@@ -247,9 +257,53 @@ export default function Profile() {
                         <div style={{
                             padding: 10,
                         }}>
-                            AAAA
+                            {
+                                room ? 
+                                <div>
+                                    <div style={{
+                                        fontSize: 24,
+                                        fontWeight: 'bold',
+                                        marginBottom: 10
+                                    }}>Phòng của bạn</div>
+                                    <div style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between'
+                                    }}>
+                                        <div style={{
+                                            display: 'flex',
+                                            flexDirection: 'column'
+                                        }}>
+                                            <div><strong>Chủ nhà:</strong> {room?.username}</div>
+                                            <div><strong>Địa chỉ:</strong> {room?.address}</div>
+                                            <div style={{
+                                                color: user?.status === 'approved' ? 'green' : 'red'
+                                            }}>
+                                                <strong>Trạng thái:</strong>
+                                                {
+                                                    user?.status === 'approved' ? ' Đã được phê duyệt' : ' Chưa được phê duyệt'
+                                                }
+                                            </div>
+                                            <div style={{
+                                                display: user?.status !== 'approved' ? 'none' : '',
+                                            }}>
+                                                <strong>Ngày thuê:</strong> {toDate(room.lastRent).split(', ')[0]}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div> :
+                                <div>Bạn chưa thuê phòng</div>
+                            }
+                            <Space style={{
+                                width: '100%',
+                                marginTop: 10,
+                                display: user?.status === 'approved' ? '' : 'none'
+                            }}>
+                                <Button type='default' size='large' onClick={() => navigate(`/room/${user?.roomId}/manage`)}>Xem chi tiết</Button>
+                            </Space>
                         </div> : 
-                        <div>
+                        <div style={{
+                            padding: 10,
+                        }}>
                             BBBB
                         </div>
                     }

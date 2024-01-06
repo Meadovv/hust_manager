@@ -12,6 +12,6 @@ router.post('/register', register)
 
 router.post('/verify', authMiddleware, verify)
 
-router.post('/getUser', getUser)
+router.post('/get-user', getUser)
 
 module.exports = router;

@@ -16,10 +16,6 @@ export default function RoomView() {
     const getRoom = async (roomId) => {
         await axios.post('/room/get-room', {
             roomId: roomId
-        }, {
-            headers: {
-                Authorization: "Bearer " + localStorage.getItem('token')
-            }
         }).then(res => {
             if(res.data.success) {
                 setRoom(res.data.room)
@@ -92,7 +88,7 @@ export default function RoomView() {
                         <ExclamationCircleOutlined style={{
                             marginRight: 10
                         }}/>
-                        Chủ nhà: {room?.firstName + ' ' + room?.lastName}
+                        Chủ nhà: {room?.username}
                     </div>
 
                     <div style={{
@@ -150,13 +146,13 @@ export default function RoomView() {
                     </div>
 
                     <div style={{
-                        display: (user?.role !== 'owner' && user?.userId !== room?.ownerId && user?.userId !== -1) ? 'flex' : 'none',
+                        display: (user?.status === null && user?.userId !== -1 && user?.role === 'user') ? 'flex' : 'none',
                         justifyContent: 'flex-end'
                     }}>
                         <Button type='primary' size='large' onClick={() => rentRoom(room?.roomId)}>Thuê</Button>
                     </div>
                     <div style={{
-                        display: (user?.role !== 'owner' && user?.userId !== room?.ownerId && user?.userId !== -1) ? 'none' : 'flex',
+                        display: (user?.status === null && user?.userId !== -1 && user?.role === 'user') ? 'none' : 'flex',
                         marginTop: 10,
                         color: '#AA0000'
                     }}>
@@ -176,7 +172,7 @@ export default function RoomView() {
                     {
                         roomImages && roomImages.map((item, index) => {
                             return (
-                                <img key={index} src={item.data} alt='image' style={{
+                                <img key={index} src={item.data} alt='example' style={{
                                     objectFit: 'cover',
                                     maxWidth: '100%',
                                     height: 400,

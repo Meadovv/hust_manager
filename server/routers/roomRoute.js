@@ -7,7 +7,12 @@ const {
     updateRoom, 
     getRoomImage, 
     rentRoom, 
-    getAllRentRequest 
+    getAllRentRequest,
+    approveRentRequest,
+    rejectRentRequest,
+    freeRoom,
+    createBill,
+    getPaymentList
 } = require('../controller/roomCtrl')
 
 const router = express.Router()
@@ -27,6 +32,16 @@ router.post('/rent-room', userMiddleware, rentRoom)
 
 router.post('/get-room-image', getRoomImage)
 
-router.post('/get-all-rent-request', ownerMiddleware, getAllRentRequest)
+router.post('/get-rent-requests', ownerMiddleware, getAllRentRequest)
+
+router.post('/approve-rent-request', ownerMiddleware, approveRentRequest)
+
+router.post('/reject-rent-request', ownerMiddleware, rejectRentRequest)
+
+router.post('/free-room', ownerMiddleware, freeRoom)
+
+router.post('/create-bill', ownerMiddleware, createBill)
+
+router.post('/get-payment-list', ownerMiddleware, getPaymentList)
 
 module.exports = router;

@@ -148,7 +148,7 @@ export default function ApartmentEdit() {
         let rooms = []
         roomList?.forEach(room => {
             if (roomFilter.floor !== -1 && room.floor !== roomFilter.floor) return
-            if (roomFilter.rented !== -1 && room.rented !== roomFilter.rented) return
+            if (roomFilter.rented !== -1 && room.status !== roomFilter.rented) return
 
             rooms.push(room)
         })
@@ -512,11 +512,11 @@ export default function ApartmentEdit() {
                                                 options={[
                                                     {
                                                         label: 'Đã thuê',
-                                                        value: 1
+                                                        value: 'approved'
                                                     },
                                                     {
                                                         label: 'Chưa thuê',
-                                                        value: 0
+                                                        value: 'available'
                                                     },
                                                     {
                                                         label: 'Tất cả',
@@ -548,7 +548,8 @@ export default function ApartmentEdit() {
                                                         <div>
                                                             <strong>Phòng: {room.number}</strong>
                                                             <div>Tầng: {room.floor}</div>
-                                                            <div>Trạng thái: {room.rented ? 'Đã có người thuê' : 'Chưa có người thuê'}</div>
+                                                            <div>Trạng thái: {room.status === 'approved' ? 'Đã có người thuê' : 
+                                                                                room.status === 'pending' ? 'Đang chờ xác nhận' : 'Chưa có người thuê'}</div>
                                                         </div>
 
                                                         <div>

@@ -142,8 +142,8 @@ const register = (req, res) => {
         const hashedPassword = await bcrypt.hash(password, hashKey)
 
         // Insert Data
-        sql = `INSERT INTO users (username, password, firstName, lastName, dob, role, status, createDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?);`
-        params = [username, hashedPassword, firstName, lastName, dob, role, 0, Date.now()]
+        sql = `INSERT INTO users (username, password, firstName, lastName, dob, role, createDate) VALUES (?, ?, ?, ?, ?, ?, ?);`
+        params = [username, hashedPassword, firstName, lastName, dob, role, Date.now()]
 
         database.query(sql, params, (err, result) => {
             if (err) {
@@ -162,7 +162,20 @@ const register = (req, res) => {
 }
 
 const verify = (req, res) => {
-    sql = 'SELECT * FROM users WHERE userId = ?'
+    sql = `
+SELECT 
+	users.userId,
+    users.username,
+    users.firstName,
+    users.lastName,
+    users.dob,
+    users.role,
+    rooms.roomId,
+    rooms.status,
+    users.createDate
+FROM users
+LEFT JOIN rooms ON users.userId = rooms.rented
+WHERE userId=?`
     params = [Number(req.body.authentication.userId)]
 
     database.query(sql, params,async (err, result) => {
@@ -174,7 +187,6 @@ const verify = (req, res) => {
         }
         if (result.length > 0) {
             const user = result[0]
-            user.password = undefined
             return res.status(200).send({
                 success: true,
                 message: 'Success!',

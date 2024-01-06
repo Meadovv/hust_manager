@@ -1,79 +1,66 @@
-import { useEffect, useState } from "react"
-import { useParams, useNavigate } from "react-router-dom"
+import React, { useEffect, useState } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
 import { Button, message } from 'antd'
 import axios from 'axios'
+import BillCreateModal from '../../../../Components/Modal/BillCreateModal'
 
-export default function RentRequest() {
+const toDate = (millis) => {
+    const date = new Date(millis)
+    return date.toLocaleString('en-GB')
+}
 
-    const [rentList, setRentList] = useState([])
-    const navigate = useNavigate()
+
+export default function Bill() {
+
     const param = useParams()
-    
-    const getRentList = async (apartmentId) => {
-        await axios.post('/room/get-rent-requests',{
+    const [roomList, setRoomList] = useState([])
+    const navigate = useNavigate()
+    const [visibleModal, setVisibleModal] = useState(false)
+    const [focusRoom, setFocusRoom] = useState(null)
+
+    const getApartmentRoom = async (apartmentId) => {
+        await axios.post('/apartment/get-apartment-room', {
             apartmentId: apartmentId
         },
-        {
-            headers: {
-                Authorization: 'Bearer ' + localStorage.getItem('token')
-            }
-        }).then(res => {
-            if(res.data.success) {
-                setRentList(res.data.rentList)
-            } else {
-                setRentList([])
-            }
-        }).catch(err => {
-            console.log(err)
-        })
-    }
-
-    const approveRequest = async (roomId) => {
-        await axios.post('/room/approve-rent-request',
-        {
-            roomId: roomId
-        },
-        {
-            headers: {
-                Authorization: 'Bearer ' + localStorage.getItem('token')
-            }
-        }).then(res => {
-            if(res.data.success) {
-                message.success(res.data.message)
-                getRentList(param.apartmentId)
-            } else {
-                message.error(res.data.message)
-            }
-        }).catch(err => {
-            console.log(err)
-        })
-    }
-
-    const rejectRequest = async (roomId) => {
-        await axios.post('/room/reject-rent-request',
-        {
-            roomId: roomId
-        },
-        {
-            headers: {
-                Authorization: 'Bearer ' + localStorage.getItem('token')
-            }
-        }).then(res => {
-            if(res.data.success) {
-                message.success(res.data.message)
-                getRentList(param.apartmentId)
-            } else {
-                message.error(res.data.message)
-            }
-        }).catch(err => {
-            console.log(err)
-        })
+            {
+                headers: {
+                    Authorization: "Bearer " + localStorage.getItem('token')
+                }
+            }).then(res => {
+                if (res.data.success) {
+                    setRoomList(res.data.memberList)
+                } else {
+                    setRoomList([])
+                }
+            }).catch(err => {
+                console.log(err)
+            })
     }
 
     useEffect(() => {
-        getRentList(param.apartmentId)
-    }, [])
-    
+        getApartmentRoom(param.apartmentId)
+    }, [param])
+
+    const createBill = async (bill) => {
+        await axios.post('/room/create-bill',{
+            bill: bill
+        }, {
+            headers: {
+                Authorization: "Bearer " + localStorage.getItem('token')
+            }
+        }).then(res => {
+            if(res.data.success) {
+                message.success(res.data.message)
+                setVisibleModal(false)
+                getApartmentRoom(param.apartmentId)
+            } else {
+                message.error(res.data.message)
+            }
+        }).catch(err => {
+            console.log(err)
+        })
+    }
+
     return (
         <div style={{
             display: 'flex',
@@ -82,17 +69,22 @@ export default function RentRequest() {
             height: '100%',
             padding: 10
         }}>
+            <BillCreateModal
+                visible={visibleModal}
+                onCancel={() => setVisibleModal(false)}
+                onOk={createBill}
+                room={focusRoom}
+            />
             <div style={{
                 fontSize: '2rem',
                 fontWeight: 'bold',
                 textTransform: 'uppercase',
             }}>
-                Danh sách chờ phê duyệt
+                Danh sách phòng
             </div>
-
             <div>
                 {
-                    rentList && rentList.map((item, index) => {
+                    roomList && roomList.map((item, index) => {
                         return (
                             <div key={index} style={{
                                 display: 'flex',
@@ -113,16 +105,19 @@ export default function RentRequest() {
                                     <div><strong>Tên người thuê:</strong> {item.username}</div>
                                     <div><strong>Tầng:</strong> {item.roomFloor}</div>
                                     <div><strong>Phòng:</strong> {item.roomNumber}</div>
+                                    <div><strong>Ngày tạo cuối:</strong> {toDate(item.lastBill)}</div>
                                 </div>
 
                                 <div style={{
-                                    width: '25%',
+                                    width: '20%',
                                     display: 'flex',
                                     justifyContent: 'space-between'
                                 }}>
-                                    <Button type='default' size='large' onClick={() => navigate(`/profile/${item.rented}`)}>Xem hồ sơ</Button>
-                                    <Button type='primary' size='large' onClick={() => approveRequest(item.roomId)}>Chấp nhận</Button>
-                                    <Button type='primary' size='large' danger onClick={() => rejectRequest(item.roomId)}>Từ chối</Button>
+                                    <Button type='default' size='large' onClick={() => navigate(`/profile/${item.roomRent}`)}>Xem hồ sơ</Button>
+                                    <Button type='primary' size='large' danger onClick={() => {
+                                        setFocusRoom(item)
+                                        setVisibleModal(true)
+                                    }}>Tạo hóa đơn</Button>
                                 </div>
                             </div>
                         )

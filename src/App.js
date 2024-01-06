@@ -20,9 +20,10 @@ import ApartmentCreate from './Pages/Apartment/ApartmentCreate/ApartmentCreate';
 import ApartmentProfile from './Pages/Apartment/ApartmentProfile/ApartmentProfile';
 import ApartmentEdit from './Pages/Apartment/ApartmentEdit/ApartmentEdit';
 import ApartmentRent from './Pages/Apartment/ApartmentRent/ApartmentRent';
-import RoomEdit from './Pages/Apartment/RoomEdit/RoomEdit';
-import RoomView from './Pages/Apartment/RoomView/RoomView';
+import RoomEdit from './Pages/Room/RoomEdit/RoomEdit';
+import RoomView from './Pages/Room/RoomView/RoomView';
 import ApartmentManage from './Pages/Apartment/ApartmentManage/ApartmentManage';
+import RoomManage from './Pages/Room/RoomManage/RoomManage';
 
 const App = () => {
 
@@ -94,6 +95,20 @@ const App = () => {
           />
 
           <Route
+            path='/apartment/:apartmentId/rent'
+            element={
+              <PrivateRoute children={<ApartmentRent />} />
+            }
+          />
+
+          <Route
+            path='/apartment/create'
+            element={
+              <AuthorizationRoute children={<ApartmentCreate />} role='owner'/>
+            }
+          />
+
+          <Route
             path='/room/:roomId/view'
             element={
               <PrivateRoute children={<RoomView />} />
@@ -108,16 +123,9 @@ const App = () => {
           />
 
           <Route
-            path='/apartment/:apartmentId/rent'
+            path='/room/:roomId/manage'
             element={
-              <PrivateRoute children={<ApartmentRent />} />
-            }
-          />
-
-          <Route
-            path='/apartment/create'
-            element={
-              <AuthorizationRoute children={<ApartmentCreate />} role='owner'/>
+              <PrivateRoute children={<RoomManage />} />
             }
           />
 

@@ -63,8 +63,7 @@ export default function ApartmentRent() {
         let rooms = []
         roomList?.forEach(room => {
             if (roomFilter.floor !== -1 && room.floor !== roomFilter.floor) return
-            if (roomFilter.rented !== -1 && room.rented !== roomFilter.rented) return
-
+            if (room.status !== 'available') return
             rooms.push(room)
         })
         setRoomListFilter(rooms)
@@ -202,6 +201,11 @@ export default function ApartmentRent() {
                         display: 'flex',
                         flexDirection: 'column'
                     }}>
+                        <div style={{
+                            display: rootListFilter.length ? 'none' : 'flex',
+                        }}>
+                            Không có phòng trống
+                        </div>
                         {
                             rootListFilter.map((room, index) => {
 
@@ -218,7 +222,8 @@ export default function ApartmentRent() {
                                         <div>
                                             <strong>Phòng: {room.number}</strong>
                                             <div>Tầng: {room.floor}</div>
-                                            <div>Trạng thái: {room.rented ? 'Đã có người thuê' : 'Chưa có người thuê'}</div>
+                                            <div>Trạng thái: {room.status === 'approved' ? 'Đã có người thuê' : 
+                                                                room.status === 'pending' ? 'Đang chờ xác nhận' : 'Chưa có người thuê'}</div>
                                         </div>
 
                                         <div>
