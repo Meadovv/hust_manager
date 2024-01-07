@@ -67,7 +67,7 @@ export default function BillCreateModal({ visible, onCancel, onOk, room }) {
                         }}>Thông tin tiền điện</div>
                         <div style={{
                             fontSize: '1rem',
-                        }}>Đơn giá: <strong>{bill?.tienDien}</strong> VND/Số</div>
+                        }}>Đơn giá: <strong>{bill?.tienDien}</strong> VND / Số</div>
                         <div style={{
                             fontSize: '1rem',
                         }}>Giá trị trên hóa đơn trước: <strong>{bill?.soDien.truoc}</strong></div>
@@ -110,7 +110,7 @@ export default function BillCreateModal({ visible, onCancel, onOk, room }) {
                         }}>Thông tin tiền nước</div>
                         <div style={{
                             fontSize: '1rem',
-                        }}>Đơn giá: <strong>{bill?.tienNuoc}</strong> VND/Số</div>
+                        }}>Đơn giá: <strong>{bill?.tienNuoc}</strong> VND / Khối</div>
                         <div style={{
                             fontSize: '1rem',
                         }}>Giá trị trên hóa đơn trước: <strong>{bill?.soNuoc.truoc}</strong></div>
@@ -153,7 +153,7 @@ export default function BillCreateModal({ visible, onCancel, onOk, room }) {
                         }}>Thông tin tiền phòng</div>
                         <div style={{
                             fontSize: '1rem',
-                        }}>Đơn giá: <strong>{bill?.tienNha}</strong> VND/Tháng</div>
+                        }}>Đơn giá: <strong>{bill?.tienNha}</strong> VND / Tháng</div>
                     </div>
 
                     <div style={{

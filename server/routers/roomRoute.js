@@ -12,7 +12,11 @@ const {
     rejectRentRequest,
     freeRoom,
     createBill,
-    getPaymentList
+    getPaymentList,
+    checkout,
+    getUnpaidBill,
+    payBill,
+    getPaymentHistory
 } = require('../controller/roomCtrl')
 
 const router = express.Router()
@@ -43,5 +47,13 @@ router.post('/free-room', ownerMiddleware, freeRoom)
 router.post('/create-bill', ownerMiddleware, createBill)
 
 router.post('/get-payment-list', ownerMiddleware, getPaymentList)
+
+router.post('/checkout', userMiddleware, checkout)
+
+router.post('/get-unpaid-bill', userMiddleware, getUnpaidBill)
+
+router.post('/pay-bill', userMiddleware, payBill)
+
+router.post('/get-payment-history', userMiddleware, getPaymentHistory)
 
 module.exports = router;

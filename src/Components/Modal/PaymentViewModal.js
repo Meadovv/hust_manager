@@ -126,8 +126,8 @@ export default function PaymentView({ visible, onCancel, onOk, room }) {
                                 justifyContent: 'space-between'
                             }}>
                                 <div style={{
-                                    color: item.paymentDate === null ? 'red' : 'green'
-                                }}><strong>Trạng thái:</strong> {item.paymentDate === null ? 'Chưa nộp' : 'Đã nộp'}</div>
+                                    color: item?.paymentDate === null ? 'red' : item?.status === 'pending' ? 'orange' : 'green',
+                                }}><strong>Trạng thái:</strong> {item?.paymentDate === null ? 'Chưa thanh toán' : item?.status === 'pending' ? 'Chờ xác nhận' : 'Đã thanh toán'}</div>
                                 <div style={{
                                     display: item.paymentDate === null ? 'none' : '',
                                 }}><strong>Ngày nộp:</strong> {toDate(item.paymentDate)}</div>

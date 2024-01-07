@@ -79,7 +79,7 @@ export default function RentRequest() {
             display: 'flex',
             flexDirection: 'column',
             width: '100%',
-            height: '100%',
+            minHeight: '100%',
             padding: 10
         }}>
             <div style={{
@@ -88,6 +88,13 @@ export default function RentRequest() {
                 textTransform: 'uppercase',
             }}>
                 Danh sách chờ phê duyệt
+            </div>
+
+            <div style={{
+                display: rentList.length ? 'none' : 'flex',
+                padding: '1rem'
+            }}>
+                Không có dữ liệu
             </div>
 
             <div>

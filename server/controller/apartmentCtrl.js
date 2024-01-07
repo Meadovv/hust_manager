@@ -59,9 +59,11 @@ const deleteApartment = (req, res) => { // Xóa 1 căn hộ
 const getApartmentList = (req, res) => { // Lấy danh sách căn hộ
     const page = req.body.page
     const userId = req.body.userId
+    let keyword = req.body.keyword
     let blacklist = req.body.blacklist
 
     if (blacklist === undefined) blacklist = 0
+    if (keyword === null || keyword === undefined) keyword = ''
 
     let recordPerPage = req.body.recordPerPage
     if (recordPerPage === '' || recordPerPage === null || recordPerPage === undefined || Number(recordPerPage) === NaN) {
@@ -97,11 +99,11 @@ const getApartmentList = (req, res) => { // Lấy danh sách căn hộ
         LEFT JOIN
             rooms ON apartments.apartmentId = rooms.apartmentId
         WHERE
-            1 AND apartments.userId <> ?
+        apartments.userId <> ? AND (address LIKE ? OR ? = '')
         GROUP BY
             apartments.apartmentId, apartments.userId, apartments.address
         LIMIT ? OFFSET ?;`
-        params = [blacklist, recordPerPage, recordPerPage * Number(page - 1)]
+        params = [blacklist, `%${keyword}%`, keyword, recordPerPage, recordPerPage * Number(page - 1)]
     } else {
         sql = `
         SELECT
@@ -115,11 +117,11 @@ const getApartmentList = (req, res) => { // Lấy danh sách căn hộ
         LEFT JOIN
             rooms ON apartments.apartmentId = rooms.apartmentId
         WHERE
-            userId = ? AND apartments.userId <> ?
+            userId = ? AND apartments.userId <> ? AND (address LIKE ? OR ? = '')
         GROUP BY
             apartments.apartmentId, apartments.userId, apartments.address
         LIMIT ? OFFSET ?;`
-        params = [userId, blacklist, recordPerPage, recordPerPage * Number(page - 1)]
+        params = [userId, blacklist, `%${keyword}%`, keyword, recordPerPage, recordPerPage * Number(page - 1)]
     }
 
     database.query(sql, params, (err, result) => {
@@ -272,7 +274,7 @@ const getApartmentMember = async (req, res) => {
             message: 'Lấy thành công',
             memberList: memberList
         })
-        
+
     } catch (err) {
         return res.status(500).send({
             success: false,
@@ -283,7 +285,7 @@ const getApartmentMember = async (req, res) => {
 
 const getApartmentRoom = async (req, res) => {
     try {
-        const memberList = await new Promise((resolve, reject) => {
+        const apartmentRooms = await new Promise((resolve, reject) => {
             database.query(`
         SELECT 
             apartments.apartmentId AS apartmentId,
@@ -294,6 +296,7 @@ const getApartmentRoom = async (req, res) => {
             rooms.status AS roomStatus,
             rooms.soDien AS soDien,
             rooms.soNuoc AS soNuoc,
+            rooms.status AS status,
             apartments.tienDien AS tienDien,
             apartments.tienNuoc AS tienNuoc,
             apartments.tienNha AS tienNha,
@@ -302,7 +305,7 @@ const getApartmentRoom = async (req, res) => {
         FROM apartments
         LEFT JOIN rooms ON apartments.apartmentId = rooms.apartmentId
         LEFT JOIN users ON rooms.rented = users.userId
-        WHERE rooms.status = 'approved' AND apartments.apartmentId = ?`,
+        WHERE apartments.apartmentId = ?`,
                 [req.body.apartmentId],
                 (err, result) => {
                     if (err) reject(err)
@@ -313,9 +316,111 @@ const getApartmentRoom = async (req, res) => {
         res.status(200).send({
             success: true,
             message: 'Lấy thành công',
-            memberList: memberList
+            apartmentRooms: apartmentRooms
         })
-        
+
+    } catch (err) {
+        return res.status(500).send({
+            success: false,
+            message: err.message
+        })
+    }
+}
+
+const getUnconfirmedBill = async (req, res) => {
+    try {
+        const billList = await new Promise((resolve, reject) => {
+            database.query(`
+            SELECT 
+                bills.billId,
+                bills.soDienTruoc,
+                bills.soDienSau,
+                bills.soNuocTruoc,
+                bills.soNuocSau,
+                bills.tienNha,
+                bills.heSoTienDien,
+                bills.heSoTienNuoc,
+                bills.heSoTienNha,
+                bills.roomId,
+                bills.payerId,
+                bills.note,
+                bills.createDate,
+                bills.paymentDate,
+                bills.status,
+                bills.paymentCode,
+                apartments.apartmentId AS apartmentId,
+                apartments.address AS roomAddress,
+                rooms.floor AS roomFloor,
+                rooms.number AS roomNumber,
+                apartments.userId AS ownerId,
+                CONCAT(ownerTable.firstName, ' ', ownerTable.lastName) AS ownerName,
+                CONCAT(payerTable.firstName, ' ', payerTable.lastName) AS payerName
+            FROM bills
+            LEFT JOIN rooms ON bills.roomId = rooms.roomId
+            LEFT JOIN apartments ON rooms.apartmentId = apartments.apartmentId
+            LEFT JOIN users AS ownerTable ON apartments.userId = ownerTable.userId
+            LEFT JOIN users AS payerTable ON bills.payerId = payerTable.userId
+            WHERE apartments.apartmentId = ? AND bills.status = 'pending' AND bills.paymentDate IS NOT NULL`,
+                [req.body.apartmentId],
+                (err, result) => {
+                    if (err) reject(err)
+                    else resolve(result)
+                })
+        })
+
+        res.status(200).send({
+            success: true,
+            message: 'Lấy thành công',
+            billList: billList
+        })
+    } catch (err) {
+        return res.status(500).send({
+            success: false,
+            message: err.message
+        })
+    }
+}
+
+const approvedBill = async (req, res) => {
+    try {
+        await new Promise((resolve, reject) => {
+            database.query(`
+            UPDATE bills SET status = 'approved' WHERE billId = ?`,
+                [req.body.billId],
+                (err, result) => {
+                    if (err) reject(err)
+                    else resolve(result)
+                })
+        })
+
+        return res.status(200).send({
+            success: true,
+            message: 'Đã xác nhận'
+        })
+    } catch (err) {
+        return res.status(500).send({
+            success: false,
+            message: err.message
+        })
+    }
+}
+
+const rejectedBill = async (req, res) => {
+    try {
+        await new Promise((resolve, reject) => {
+            database.query(`
+            UPDATE bills SET paymentDate = null, paymentCode = null WHERE billId = ?`,
+                [req.body.billId],
+                (err, result) => {
+                    if (err) reject(err)
+                    else resolve(result)
+                })
+        })
+
+        return res.status(200).send({
+            success: true,
+            message: 'Đã từ chối'
+        })
     } catch (err) {
         return res.status(500).send({
             success: false,
@@ -332,5 +437,8 @@ module.exports = {
     getApartmentImage,
     editApartment,
     getApartmentMember,
-    getApartmentRoom
+    getApartmentRoom,
+    getUnconfirmedBill,
+    approvedBill,
+    rejectedBill
 }

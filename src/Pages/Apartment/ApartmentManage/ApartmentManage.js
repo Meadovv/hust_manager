@@ -5,7 +5,7 @@ import { useSelector } from "react-redux";
 import axios from "axios";
 import { IssuesCloseOutlined, DollarOutlined, FileSearchOutlined, BarsOutlined, TeamOutlined } from '@ant-design/icons'
 import RentRequest from "./Manager/RentRequest";
-import FeeConfirm from "./Manager/FeeConfirm";
+import BillConfirm from "./Manager/BillConfirm";
 import Bill from "./Manager/Bill";
 import PaymentList from "./Manager/PaymentList";
 import MemberList from "./Manager/MemberList";
@@ -17,13 +17,13 @@ const menuItems = [
         icon: <IssuesCloseOutlined />
     },
     {
-        label: 'Xác nhận nộp tiền',
-        value: 'fee-confirm',
+        label: 'Xác nhận hóa đơn',
+        value: 'confirm-bill',
         icon: <DollarOutlined />
     },
     {
-        label: 'Hóa đơn',
-        value: 'bill',
+        label: 'Tạo hóa đơn',
+        value: 'create-bill',
         icon: <FileSearchOutlined />
     },
     {
@@ -155,7 +155,7 @@ export default function ApartmentManage() {
                 }}>
                     {
                         currentMenu === menuItems[0].value ? <RentRequest /> :
-                            currentMenu === menuItems[1].value ? <FeeConfirm /> :
+                            currentMenu === menuItems[1].value ? <BillConfirm /> :
                                 currentMenu === menuItems[2].value ? <Bill /> :
                                     currentMenu === menuItems[3].value ? <PaymentList /> : <MemberList />
                     }

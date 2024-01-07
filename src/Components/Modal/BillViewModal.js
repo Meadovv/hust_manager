@@ -6,7 +6,24 @@ const toDate = (millis) => {
     return date.toLocaleString('en-GB')
 }
 
-export default function BillViewModal({visible, onOk, onCancel, bill}) {
+export default function BillViewModal({ visible, onOk, onCancel, bill }) {
+
+    const formatMoney = (money) => {
+        const moneyString = money.toString()
+        const moneyArray = moneyString.split('')
+        const result = []
+        let count = 0
+        for (let i = moneyArray.length - 1; i >= 0; --i) {
+            result.push(moneyArray[i])
+            ++count
+            if (count === 3 && i !== 0) {
+                result.push('.')
+                count = 0
+            }
+        }
+        return result.reverse().join('')
+    }
+
 
     return (
         <Modal
@@ -112,21 +129,31 @@ export default function BillViewModal({visible, onOk, onCancel, bill}) {
                             <div><strong>Thành tiền:</strong> {bill?.heSoTienNha * bill?.tienNha} VND</div>
                         </div>
 
-                    <div style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        marginTop: 10
-                    }}>
                         <div style={{
-                            fontWeight: 'bold',
-                            fontSize: '1.2rem'
-                        }}>Tổng thanh toán: {
-                            bill?.heSoTienDien * (bill?.soDienSau - bill?.soDienTruoc) + 
-                            bill?.heSoTienNuoc * (bill?.soNuocSau - bill?.soNuocTruoc) +
-                            bill?.heSoTienNha * bill?.tienNha
-                        } VND</div>
-                    </div>
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            marginTop: 10
+                        }}>
+                            <div style={{
+                                fontWeight: 'bold',
+                                fontSize: '1.5rem'
+                            }}>Tổng thanh toán: {formatMoney(
+                                bill?.heSoTienDien * (bill?.soDienSau - bill?.soDienTruoc) + bill?.heSoTienNuoc * (bill?.soNuocSau - bill?.soNuocTruoc) + bill?.heSoTienNha * bill?.tienNha
+                            )} VND</div>
+                        </div>
+
+                        <div style={{
+                            fontWeight: 'bold'
+                        }}>Tiền phòng</div>
+                        <div style={{
+                            width: '100%',
+                            display: 'flex',
+                            justifyContent: 'space-between'
+                        }}>
+                            <div><strong>Ghi chú:</strong> {bill?.note}</div>
+                        </div>
+
                     </div>
                 </div>
                 <Divider orientation='left' style={{
@@ -139,10 +166,13 @@ export default function BillViewModal({visible, onOk, onCancel, bill}) {
                 </Divider>
                 <div>
                     <div style={{
-                        color: bill?.paymentDate === null ? 'red' : 'green'
-                    }}><strong>Trạng thái:</strong> {(bill?.paymentDate === null ? 'Chưa thanh toán' : 'Đã thanh toán')}</div>
+                        color: bill?.paymentDate === null ? 'red' : bill?.status === 'pending' ? 'orange' : 'green',
+                    }}><strong>Trạng thái:</strong> {bill?.paymentDate === null ? 'Chưa thanh toán' : bill?.status === 'pending' ? 'Chờ xác nhận' : 'Đã thanh toán'}</div>
                     <div><strong>Người thanh toán:</strong> {bill?.payerName}</div>
-                    <div  style={{
+                    <div style={{
+                        display: bill?.paymentDate === null ? 'none' : '',
+                    }}><strong>Mã thanh toán:</strong> {bill?.paymentCode}</div>
+                    <div style={{
                         display: bill?.paymentDate === null ? 'none' : '',
                     }}><strong>Ngày thanh toán:</strong> {toDate(bill?.paymentDate)}</div>
                 </div>

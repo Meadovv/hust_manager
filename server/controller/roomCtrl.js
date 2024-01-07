@@ -383,6 +383,8 @@ const getPaymentList = async (req, res) => {
                 bills.note,
                 bills.createDate,
                 bills.paymentDate,
+                bills.status,
+                bills.paymentCode,
                 apartments.apartmentId AS apartmentId,
                 apartments.address AS roomAddress,
                 rooms.floor AS roomFloor,
@@ -415,6 +417,166 @@ const getPaymentList = async (req, res) => {
     }
 }
 
+const checkout = async (req, res) => {
+
+    const billList = await new Promise((resolve, reject) => {
+        database.query(`SELECT * FROM bills WHERE roomId=? AND payerId=? AND status='pending'`, [req.body.roomId, req.body.authentication.userId], (err, result) => {
+            if(err) reject(err)
+            else resolve(result)
+        })
+    })
+
+    if(billList.length > 0) {
+        return res.status(200).send({
+            success: false,
+            message: 'Bạn còn hóa đơn chưa thanh toán'
+        })
+    }
+
+    await new Promise((resolve, reject) => {
+        database.query(`UPDATE rooms SET rented=?, status=? WHERE roomId=?`, [null, 'available', req.body.roomId], (err, result) => {
+            if(err) reject(err)
+            else resolve(result)
+        })
+    })
+
+    return res.status(200).send({
+        success: true,
+        message: 'Trả phòng thành công'
+    
+    })
+}
+
+const getUnpaidBill = async (req, res) => {
+    try {
+        const paymentList = await new Promise((resolve, reject) => {
+            database.query(
+                `SELECT 
+                bills.billId,
+                bills.soDienTruoc,
+                bills.soDienSau,
+                bills.soNuocTruoc,
+                bills.soNuocSau,
+                bills.tienNha,
+                bills.heSoTienDien,
+                bills.heSoTienNuoc,
+                bills.heSoTienNha,
+                bills.roomId,
+                bills.payerId,
+                bills.note,
+                bills.createDate,
+                bills.paymentDate,
+                bills.status,
+                bills.paymentCode,
+                apartments.apartmentId AS apartmentId,
+                apartments.address AS roomAddress,
+                rooms.floor AS roomFloor,
+                rooms.number AS roomNumber,
+                apartments.userId AS ownerId,
+                CONCAT(ownerTable.firstName, ' ', ownerTable.lastName) AS ownerName,
+                CONCAT(payerTable.firstName, ' ', payerTable.lastName) AS payerName
+            FROM bills
+            LEFT JOIN rooms ON bills.roomId = rooms.roomId
+            LEFT JOIN apartments ON rooms.apartmentId = apartments.apartmentId
+            LEFT JOIN users AS ownerTable ON apartments.userId = ownerTable.userId
+            LEFT JOIN users AS payerTable ON bills.payerId = payerTable.userId
+            WHERE payerTable.userId = ? AND bills.status = 'pending'
+            `, 
+                [req.body.authentication.userId], (err, result) => {
+                if(err) reject(err)
+                else resolve(result)
+            })
+        })
+        res.status(200).send({
+            success: true,
+            message: 'Lấy danh sách thành công',
+            paymentList: paymentList
+        })
+    } catch (err) {
+        res.status(500).send({
+            success: false,
+            message: err.message
+        })
+    }
+}
+
+const payBill = async (req, res) => {
+    try {
+        await new Promise((resolve, reject) => {
+            database.query(`UPDATE bills SET paymentDate=?, paymentCode=? WHERE billId=?`, 
+            [Date.now(), req.body.paymentCode, req.body.billId], 
+            (err, result) => {
+                if(err) reject(err)
+                else resolve(result)
+            })
+        })
+
+        res.status(200).send({
+            success: true,
+            message: 'Đã gửi yêu cầu tới chủ nhà'
+        })
+    } catch (err) {
+        res.status(500).send({
+            success: false,
+            message: err.message
+        })
+    }
+}
+
+const getPaymentHistory = async (req, res) => {
+    try {
+        const paymentList = await new Promise((resolve, reject) => {
+            database.query(`
+            SELECT 
+            bills.billId,
+            bills.soDienTruoc,
+            bills.soDienSau,
+            bills.soNuocTruoc,
+            bills.soNuocSau,
+            bills.tienNha,
+            bills.heSoTienDien,
+            bills.heSoTienNuoc,
+            bills.heSoTienNha,
+            bills.roomId,
+            bills.payerId,
+            bills.note,
+            bills.createDate,
+            bills.paymentDate,
+            bills.status,
+            bills.paymentCode,
+            apartments.apartmentId AS apartmentId,
+            apartments.address AS roomAddress,
+            rooms.floor AS roomFloor,
+            rooms.number AS roomNumber,
+            apartments.userId AS ownerId,
+            CONCAT(ownerTable.firstName, ' ', ownerTable.lastName) AS ownerName,
+            CONCAT(payerTable.firstName, ' ', payerTable.lastName) AS payerName
+        FROM bills
+        LEFT JOIN rooms ON bills.roomId = rooms.roomId
+        LEFT JOIN apartments ON rooms.apartmentId = apartments.apartmentId
+        LEFT JOIN users AS ownerTable ON apartments.userId = ownerTable.userId
+        LEFT JOIN users AS payerTable ON bills.payerId = payerTable.userId
+        WHERE payerTable.userId = ? AND bills.status = 'approved'`, 
+            [req.body.authentication.userId],
+            (err, result) => {
+                if(err) reject(err)
+                else resolve(result)
+            })
+        })
+
+        res.status(200).send({
+            success: true,
+            message: 'Lấy danh sách thành công',
+            paymentList: paymentList
+        })
+    } catch (err) {
+        res.status(500).send({
+            success: false,
+            message: err.message
+        })
+    }
+}
+
 module.exports = {
     addRoom,
     getRoomList,
@@ -427,5 +589,9 @@ module.exports = {
     rejectRentRequest,
     freeRoom,
     createBill,
-    getPaymentList
+    getPaymentList,
+    checkout,
+    getUnpaidBill,
+    payBill,
+    getPaymentHistory
 }

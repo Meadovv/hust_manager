@@ -24,6 +24,8 @@ import RoomEdit from './Pages/Room/RoomEdit/RoomEdit';
 import RoomView from './Pages/Room/RoomView/RoomView';
 import ApartmentManage from './Pages/Apartment/ApartmentManage/ApartmentManage';
 import RoomManage from './Pages/Room/RoomManage/RoomManage';
+import Guide from './Pages/Guide/Guide';
+import Contact from './Pages/Contact/Contact';
 
 const App = () => {
 
@@ -63,6 +65,16 @@ const App = () => {
           <Route 
             path='/about' 
             element={<About />}
+          />
+
+          <Route 
+            path='/guide' 
+            element={<Guide />}
+          />
+
+          <Route 
+            path='/contact' 
+            element={<Contact />}
           />
 
 

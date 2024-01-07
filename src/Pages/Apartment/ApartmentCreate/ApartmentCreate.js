@@ -10,6 +10,8 @@ import {
     message
 } from 'antd'
 import { PlusOutlined } from '@ant-design/icons';
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import axios from 'axios'
 
 const uploadButton = (
@@ -34,6 +36,9 @@ const getBase64 = (file) =>
     });
 
 export default function ApartmentCreate() {
+
+    const navigate = useNavigate()
+    const { user } = useSelector(state => state.user)
 
     const [apartmentInfo, setApartmentInfo] = useState({
         address: null,
@@ -64,6 +69,7 @@ export default function ApartmentCreate() {
             }).then(res => {
                 if (res.data.success) {
                     message.success(res.data.message)
+                    navigate(`/`)
                 } else {
                     message.error(res.data.message)
                 }
@@ -215,7 +221,7 @@ export default function ApartmentCreate() {
                     }}>
                         <Space>
                             <Button type='primary' size='large' onClick={handleAddApartment}>Thêm</Button>
-                            <Button type='primary' size='large' danger>Thoát</Button>
+                            <Button type='primary' size='large' danger onClick={() => navigate(`/profile/${user?.userId}`)}>Thoát</Button>
                         </Space>
                     </div>
                 </div>

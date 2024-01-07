@@ -3,10 +3,13 @@ import { useSelector } from 'react-redux'
 import { useParams, useNavigate } from 'react-router-dom'
 import Layout from '../../../Components/Layout/Layout'
 import { SettingOutlined, FileSearchOutlined, BarsOutlined } from '@ant-design/icons'
+import BillHistory from './Manager/BillHistory'
+import BillView from './Manager/BillView'
+import Setting from './Manager/Setting'
 
 const menuItems = [
     {
-        label: 'Hóa đơn',
+        label: 'Thanh toán hóa đơn',
         value: 'bill',
         icon: <FileSearchOutlined />
     },
@@ -101,7 +104,10 @@ export default function RoomManage() {
                     width: '85%',
                     minHeight: '100vh'
                 }}>
-                    AAA
+                    {
+                        currentMenu === menuItems[0].value ? <BillView /> :
+                            currentMenu === menuItems[1].value ? <BillHistory /> : <Setting />
+                    }
                 </div>
             </div>
         </Layout>

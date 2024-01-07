@@ -28,7 +28,7 @@ export default function PaymentList() {
                 }
             }).then(res => {
                 if (res.data.success) {
-                    setRoomList(res.data.memberList)
+                    setRoomList(res.data.apartmentRooms)
                 } else {
                     setRoomList([])
                 }
@@ -46,7 +46,7 @@ export default function PaymentList() {
             display: 'flex',
             flexDirection: 'column',
             width: '100%',
-            height: '100%',
+            minHeight: '100%',
             padding: 10
         }}>
             <PaymentView
@@ -82,7 +82,9 @@ export default function PaymentList() {
                                     flexDirection: 'column',
                                     justifyContent: 'space-between'
                                 }}>
-                                    <div><strong>Tên người thuê:</strong> {item.username}</div>
+                                    <div><strong>Tên người thuê:</strong> {
+                                        item.username === null ? 'Chưa có' : item.username
+                                    }</div>
                                     <div><strong>Tầng:</strong> {item.roomFloor}</div>
                                     <div><strong>Phòng:</strong> {item.roomNumber}</div>
                                 </div>
@@ -92,7 +94,7 @@ export default function PaymentList() {
                                     display: 'flex',
                                     justifyContent: 'space-between'
                                 }}>
-                                    <Button type='default' size='large' onClick={() => navigate(`/profile/${item.roomRent}`)}>Xem hồ sơ</Button>
+                                    <Button type='default' size='large' onClick={() => navigate(`/profile/${item.roomRent}`)} disabled={item.username === null}>Xem hồ sơ</Button>
                                     <Button type='primary' size='large' onClick={() => {
                                         setFocusRoom(item)
                                         setVisibleModal(true)

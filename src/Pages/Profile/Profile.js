@@ -63,7 +63,8 @@ export default function Profile() {
         {
             page: page,
             userId: userId,
-            recordPerPage: 5
+            recordPerPage: 5,
+            keyword: null
         }).then(res => {
             if(res.data.success) {
                 setApartmentList(res.data.list)
@@ -304,7 +305,7 @@ export default function Profile() {
                         <div style={{
                             padding: 10,
                         }}>
-                            BBBB
+                            Bookmark
                         </div>
                     }
                 </div>

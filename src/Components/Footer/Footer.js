@@ -8,11 +8,7 @@ const Footer = () => {
             display: 'flex',
             justifyContent: 'flex-end'
         }}>
-            <div style={{
-                padding: 10,
-                fontSize: 20,
-                fontWeight: 'bold'
-            }}>Copyright AnhTuan</div>
+            
         </div>
     )
 }

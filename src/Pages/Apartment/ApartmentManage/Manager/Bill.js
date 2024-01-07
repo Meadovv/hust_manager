@@ -28,7 +28,8 @@ export default function Bill() {
                 }
             }).then(res => {
                 if (res.data.success) {
-                    setRoomList(res.data.memberList)
+                    const roomList = res.data.apartmentRooms.filter(item => item.status === 'approved')
+                    setRoomList(roomList)
                 } else {
                     setRoomList([])
                 }

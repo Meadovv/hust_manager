@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Row, Col, Card, Input } from 'antd'
+import { Row, Col, Card, Input, Button, message } from 'antd'
 import Layout from '../../Components/Layout/Layout'
 import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
@@ -11,29 +11,31 @@ const Home = () => {
 
     const [apartmentList, setApartmentList] = useState([])
     const [page, setPage] = useState(1)
+    const [keyword, setKeyword] = useState(null)
 
     const navigate = useNavigate()
 
     const getApartmentList = async () => {
         await axios.post('/apartment/get-apartment-list',
-        {
-            blacklist: user?.userId,
-            userId: 0,
-            page: page
-        }).then(res => {
-            if(res.data.success) {
-                setApartmentList(res.data.list)
-            } else {
-                console.log(res.data.message)
-            }
-        }).catch(err => {
-            console.log(err)
-        })
+            {
+                blacklist: user?.userId,
+                userId: 0,
+                page: page,
+                keyword: keyword
+            }).then(res => {
+                if (res.data.success) {
+                    setApartmentList(res.data.list)
+                } else {
+                    console.log(res.data.message)
+                }
+            }).catch(err => {
+                console.log(err)
+            })
     }
 
     useEffect(() => {
         getApartmentList()
-    }, [user])
+    }, [user, page, keyword])
 
     return (
         <Layout>
@@ -50,8 +52,12 @@ const Home = () => {
                     width: '50%'
                 }}>
                     <Input.Search
+                        allowClear
                         placeholder='Tìm kiếm'
                         size='large'
+                        onSearch={(value) => {
+                            setKeyword(value)
+                        }}
                     />
                 </div>
             </Row>
@@ -76,8 +82,8 @@ const Home = () => {
                                         style={{
                                             fontSize: 18
                                         }}
-                                        title={`Số phòng trống: ${item.roomNumber - item.rentedRoom}`} 
-                                        description={`Tổng số phòng: ${item.roomNumber}`} 
+                                        title={`Số phòng trống: ${item.roomNumber - item.rentedRoom}`}
+                                        description={`Tổng số phòng: ${item.roomNumber}`}
                                     />
                                 </Card>
                             </Col>
@@ -85,6 +91,28 @@ const Home = () => {
                     })
                 }
             </Row>
+            <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                marginTop: 10,
+                padding: 20
+            }}>
+                <Button type='primary' size='large' onClick={() => {
+                    let previousPage = page - 1
+                    if (!(previousPage < 1)) setPage(previousPage)
+                }}>Previous</Button>
+                <div style={{
+                    fontSize: 18,
+                    fontWeight: 'bold',
+                    color: 'black',
+                    display: 'flex',
+                    alignItems: 'center'
+                }}>Page: {page}</div>
+                <Button type='primary' size='large' onClick={() => {
+                    let nextPage = page + 1
+                    setPage(nextPage)
+                }}>Next</Button>
+            </div>
         </Layout>
     )
 }
